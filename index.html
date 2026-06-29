@@ -1509,107 +1509,76 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
 <script>
   const pages = ["accueil", "02-07", "03-07", "04-07", "05-07", "06-07", "07-07", "08-07", "09-07", "10-07", "11-07", "12-07", "Vocabulaire", "Documents", "Dépenses"];
   let currentPageIndex = 0;
+  let _hashChanging = false;
 
   function updateNavButtons() {
     document.querySelectorAll('.btn-prev').forEach(btn => { btn.disabled = (currentPageIndex === 0); });
     document.querySelectorAll('.btn-next').forEach(btn => { btn.disabled = (currentPageIndex === pages.length - 1); });
   }
 
-  function showPage(pageId) {
+  function _scrollToPage(pageId) {
     const target = document.getElementById(pageId);
     if (!target) return;
     const inner = target.querySelector(':scope > .page-inner');
     if (inner) inner.scrollTop = 0;
     target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
-    _lastPageId = pageId;
+  }
+
+  function showPage(pageId) {
+    _hashChanging = true;
+    window.location.hash = pageId;
+    _scrollToPage(pageId);
+    const idx = pages.indexOf(pageId);
+    if (idx !== -1) currentPageIndex = idx;
+    updateNavButtons();
+    setTimeout(() => { _hashChanging = false; }, 100);
   }
 
   function navPrev() { if (currentPageIndex > 0) showPage(pages[currentPageIndex - 1]); }
   function navNext() { if (currentPageIndex < pages.length - 1) showPage(pages[currentPageIndex + 1]); }
 
-  // ── Tracking page courante via scroll ────────────────────────────
+  // ── Tracking page courante via scroll (swipe) ─────────────────────
   document.body.addEventListener('scroll', function() {
-    const scrollTop = document.body.scrollTop;
-    const windowH = window.innerHeight;
-    const idx = Math.round(scrollTop / windowH);
+    const idx = Math.round(document.body.scrollTop / window.innerHeight);
     if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
       currentPageIndex = idx;
-      console.log('scroll → page:', pages[idx], '| scrollTop:', scrollTop, '| windowH:', windowH);
       updateNavButtons();
-	  _pushNav(pages[idx]);
+      // replaceState sur le hash : met à jour l'URL sans créer d'entrée historique
+      // le swipe ne crée pas d'état — seul showPage (liens/menu) en crée
+      history.replaceState(null, '', '#' + pages[idx]);
     }
   });
 
-  updateNavButtons();
-
-  // ── Retour Android ────────────────────────────────────────────────
-  let _navStack       = [];
-  let _lastPageId     = 'accueil';
-  let _backInProgress = false;
-
-  history.replaceState({ nav: 'root' }, '');
-  history.pushState({ nav: true }, '');
-  console.log('INIT history.length=', history.length);
-
-  function _pushNav(pageId) {
-    if (_backInProgress) return;
-    const top = _navStack[_navStack.length - 1];
-    if (top && top.pageId === pageId) return;
-    if (top) {
-      const prevEl = document.getElementById(top.pageId);
-      const prevInner = prevEl && prevEl.querySelector(':scope > .page-inner');
-      top.scrollTop = prevInner ? prevInner.scrollTop : 0;
-    }
-    _navStack.push({ pageId, scrollTop: 0 });
-    history.pushState({ nav: true }, '');
-    console.log('_pushNav:', pageId, '| stack:', _navStack.map(x=>x.pageId), '| history.length=', history.length);
-  }
-
-  const _origShowPage = showPage;
-  window.showPage = function(pageId) { _pushNav(pageId); _origShowPage(pageId); };
-
-  const _origUpdateNavButtons = updateNavButtons;
-  window.updateNavButtons = function() {
-    _origUpdateNavButtons();
-  };
-
-  _pushNav('accueil');
-
-  window.addEventListener('popstate', function() {
-    console.log('POPSTATE | stack avant pop:', _navStack.map(x=>x.pageId), '| history.length=', history.length);
-    _navStack.pop();
-    const prev = _navStack[_navStack.length - 1];
-    console.log('POPSTATE | prev:', prev ? prev.pageId : 'VIDE');
-
-    if (!prev) {
-      _navStack.push({ pageId: 'accueil', scrollTop: 0 });
-      history.pushState({ nav: true }, '');
-      console.log('POPSTATE | pile vide → retour accueil');
-      _backInProgress = true;
-      const el = document.getElementById('accueil');
-      if (el) {
-        const inner = el.querySelector(':scope > .page-inner');
-        if (inner) inner.scrollTop = 0;
-        el.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
-        currentPageIndex = 0;
-        _origUpdateNavButtons();
-      }
-      _backInProgress = false;
+  // ── Retour Android via hashchange ─────────────────────────────────
+  // Chaque appel à showPage crée une entrée hash dans l'historique.
+  // Le bouton Retour Android navigue entre ces hashs nativement.
+  window.addEventListener('hashchange', function() {
+    if (_hashChanging) return;
+    const pageId = window.location.hash.slice(1);
+    if (!pageId || !pages.includes(pageId)) {
+      _scrollToPage('accueil');
+      currentPageIndex = 0;
+      updateNavButtons();
       return;
     }
-
-    _backInProgress = true;
-    const target = document.getElementById(prev.pageId);
-    if (target) {
-      const inner = target.querySelector(':scope > .page-inner');
-      if (inner) inner.scrollTop = prev.scrollTop || 0;
-      target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
-      currentPageIndex = pages.indexOf(prev.pageId);
-      _origUpdateNavButtons();
-    }
-    _backInProgress = false;
+    const idx = pages.indexOf(pageId);
+    currentPageIndex = idx;
+    updateNavButtons();
+    _scrollToPage(pageId);
   });
 
+  // ── Init : si un hash est déjà dans l'URL au chargement ───────────
+  (function() {
+    const hash = window.location.hash.slice(1);
+    if (hash && pages.includes(hash)) {
+      const idx = pages.indexOf(hash);
+      currentPageIndex = idx;
+      _scrollToPage(hash);
+    }
+    updateNavButtons();
+  })();
+
+  // ── Menu hamburger ────────────────────────────────────────────────
   function openNavMenu() {
     document.getElementById('nav-overlay').classList.add('open');
     document.getElementById('nav-popup').classList.add('open');
@@ -1620,5 +1589,6 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   }
   function navTo(pageId) { closeNavMenu(); showPage(pageId); }
 </script>
+
 </body>
 </html>
