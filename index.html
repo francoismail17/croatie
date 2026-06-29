@@ -342,7 +342,7 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   <div class="hero-mobile">
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
       <button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours" style="background:rgba(255,255,255,0.25); flex-shrink:0;"><span></span><span></span><span></span></button>
-      <h1 style="flex:1; text-align:center;">10 Croatie Dalmatienne <em>île-en-île</em></h1>
+      <h1 style="flex:1; text-align:center;">11 Croatie Dalmatienne <em>île-en-île</em></h1>
     </div>
     <p style="font-size:12px; opacity:0.85; text-align:center;">Nantes ➔ Dubrovnik / Split ➔ Nantes</p>
   </div>
@@ -1548,12 +1548,32 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
       console.log('pushState hash:', pages[idx], '| history.length:', history.length);
     }
 });
-document.body.addEventListener('touchstart', function() {
-    history.pushState(null, '', '#accueil');
-    history.pushState(null, '', '#accueil');
-    console.log('1er touchstart → 2x pushState accueil | history.length:', history.length);
-}, { once: true });
+let _touchStartCount = 0;
+let _historyReady = false;
 
+document.body.addEventListener('touchstart', function() {
+    _touchStartCount++;
+    console.log('touchstart #', _touchStartCount);
+    if (_touchStartCount >= 3 && !_historyReady) {
+        _historyReady = true;
+        history.pushState(null, '', '#accueil');
+        console.log('3ème touchstart → pushState accueil | history.length:', history.length);
+    }
+});
+
+document.body.addEventListener('scroll', function() {
+    const idx = Math.round(document.body.scrollTop / window.innerHeight);
+    if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
+        currentPageIndex = idx;
+        updateNavButtons();
+        if (_historyReady) {
+            history.pushState(null, '', '#' + pages[idx]);
+            console.log('pushState hash:', pages[idx], '| history.length:', history.length);
+        } else {
+            console.log('pushState BLOQUÉ _historyReady=false');
+        }
+    }
+});
 window.addEventListener('popstate', function(e) {
     console.log('POPSTATE | hash:', window.location.hash, '| history.length:', history.length);
 });
