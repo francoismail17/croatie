@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Croatie 2026 · Carnet de Voyage Mobile</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,600;0,700;1,400&family=Inter:wght=300;400;500;600;700&family=JetBrains+Mono:wght=400;500;700&display=swap');
+
+  :root {
+    --sea:       #0B4F6C;
+    --sea-mid:   #1A7FA0;
+    --sea-light: #E8F4FA;
+    --sky:       #E8F4FA;
+    --stone:     #F4F0E8;
+    --sand:      #E8D9BF;
+    --terracotta:#C0563B;
+    --olive:     #5A7A3A;
+    --amber:     #C87820;
+    --ink:       #1A1A2E;
+    --muted:     #6B7280;
+    --white:     #FFFFFF;
+    --ferry-bg:  #E6F4F0;
+    --ferry-bd:  #1A9070;
+    --hotel-bg:  #FFF8EE;
+    --hotel-bd:  #C87820;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  
+  html, body {
+    height: 100%;
+  }
+
+  html {
+    /* html ne doit JAMAIS scroller : sinon il entre en concurrence    */
+    /* avec le scroll-snap de body et les sections s'arrêtent à des   */
+    /* positions arbitraires au lieu d'être toujours alignées en haut.*/
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--stone);
+    color: var(--ink);
+    line-height: 1.5;
+    overflow-x: hidden;
+    font-size: 16px;
+    text-align: justify;
+
+    /* ── Seul et unique conteneur de scroll-snap de la page ── */
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* ── Mode "page bloquée" : chaque section est une fenêtre opaque   */
+  /* de la hauteur exacte de l'écran. Le h2 reste fixe en haut, et   */
+  /* la section suivante ne peut jamais être visible en dessous tant */
+  /* qu'on n'a pas glissé vers elle via le scroll-snap.               */
+  .page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--stone);
+  }
+  /* Le contenu sous le h2 scrolle À L'INTÉRIEUR de la section :     */
+  /* c'est lui qui défile quand le contenu dépasse l'écran, pendant  */
+  /* que le h2 (hors de ce conteneur) reste visuellement fixe.       */
+  .page-inner {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 75px;
+  }
+  .page h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--sea);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--sand);
+  padding-bottom: 4px;
+  padding-top: 4px;
+  flex-shrink: 0;
+
+  /* Le h2 est hors de .page-inner : il reste naturellement fixe   */
+  /* en haut de la section tant qu'on n'a pas glissé vers la suivante. */
+  background-color: var(--stone);
+  z-index: 10;}
+
+  /* La description de la journée (div juste après le h2) reste elle */
+  /* aussi fixe en haut, comme le h2 : elle est exclue de .page-inner */
+  /* par le script de wrapping ci-dessous, et reçoit donc le même     */
+  /* traitement (fond opaque + z-index) pour ne jamais être recouverte */
+  /* ni recouvrir le contenu qui scrolle en dessous.                  */
+  .page-desc {
+    background-color: var(--stone);
+    z-index: 9;
+    flex-shrink: 0;
+    position: relative;
+    text-align: center;
+	font-size:15px;
+	font-weight: 700;
+	color:var(--sea);
+	margin-bottom:5px;
+	margin-top:5px;
+  }
+.page-desc .icon-link {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 6px;
+  background-image: url("https://fr.wikipedia.org/static/images/icons/wikipedia.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+}
+Réglages que vous pouvez ajuster :
+
+1s : durée d'un cycle complet (gros→petit→gros). Réduisez pour une pulsation plus rapide, augmentez pour plus lente.
+scale(1.4) : amplitude du grossissement (1.4 = +40% de taille au maximum). Montez à 1.6 ou 1.8 pour un effet plus marqué.
+infinite : boucle sans fin. Remplacez par un nombre (ex. 3) si vous voulez que ça s'arrête après quelques cycles.
+ease-in-out : donne une transition douce. linear donnerait un mouvement plus mécanique/régulier.
+Petite remarque : comme width/height sont fixes sur l'élément et que c'est transform: scale() qui anime (pas width/height eux-mêmes), l'animation est fluide et performante (pas de recalcul de layout à chaque frame).
+
+
+
+
+  h2 .page-desc span::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-image: url("https://fr.wikipedia.org/static/images/icons/wikipedia.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+  
+  h1 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--white); margin-bottom: 4px; font-weight: 700; }
+  h1 em { font-style: italic; font-weight: 400; color: #C8E8F0; }
+  h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--sea); display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--sand); padding-bottom: 4px; }
+  h3 { font-weight: 700; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.5px; font-family: 'JetBrains Mono', monospace;}
+  h4 { font-weight: 600; color: var(--sea); margin-bottom: 6px; }
+  
+  .hero-mobile {
+    background: linear-gradient(160deg, var(--sea) 0%, var(--sea-mid) 100%);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .hero-mobile h1 { font-size: 21px; line-height: 1.2; }
+  
+  .tdm-list a .tdm-title {color: var(--sea);text-decoration: underline;text-decoration-thickness: 1px;}
+  .tdm-list { list-style: none; display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+  .tdm-item { background: var(--white); border-radius: 5px; border: 1px solid rgba(0,0,0,0.02); }
+  .tdm-link { display: flex; align-items: center; padding: 5px 8px; text-decoration: none; color: var(--ink); cursor: pointer; }
+  .tdm-day { font-family: 'JetBrains Mono', monospace; background: var(--sky); color: var(--sea); font-size: 11px; font-weight: 700; padding: 1px 4px; border-radius: 3px; margin-right: 6px; min-width: 54px; text-align: center; }
+  .tdm-title { font-size: 15px; font-weight: 500; flex: 1; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tdm-arrow { color: var(--sea-mid); font-size: 10px; }
+
+  .card {background: var(--white);border-radius: 10px;padding: 5px;margin-bottom: 10px;border: 1px solid rgba(0,0,0,0.03);box-shadow: 0 2px 5px rgba(0,0,0,0.02);font-weight: normal;}
+  
+  .act-group-label { font-family: 'JetBrains Mono', monospace; text-transform: uppercase; color: var(--terracotta); font-weight: 600; margin: 0px 0px 0px 8px; padding-bottom: 2px; border-bottom: 1px dashed var(--sand); }
+  .act-list { list-style: none; }
+  .act-list li { padding: 4px 4px 4px 4px; position: relative; color: var(--ink); border-bottom: 1px solid #F9F9F9; line-height: 1.4; }
+  .act-list li:last-child { border-bottom: none; }
+  .act-list li::before { content: '°'; color: var(--sea-mid); font-weight: 700;margin-right:5px }
+  .act-list li strong { color: var(--sea); }
+  
+  .act-list a.geo-link { color: var(--sea); text-decoration: underline; font-weight: 600; }
+
+  .ferry-box { background: var(--ferry-bg); border: 1.5px solid var(--ferry-bd); border-radius: 8px; padding: 10px; margin: 8px 0; }
+  .ferry-title { font-weight: 700; color: var(--ferry-bd); margin-bottom: 4px; }
+  
+  .hotel-box { background: var(--hotel-bg); border: 1.5px solid var(--hotel-bd); border-radius: 8px; padding: 10px; margin: 8px 0; }
+  .hotel-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--amber); margin-bottom: 2px; }
+  .hotel-stars { color: var(--amber); margin-bottom: 4px; }
+  .hotel-addr { color: var(--muted); margin-bottom: 4px; }
+  .hotel-price { font-weight: 600; color: var(--olive); margin-bottom: 4px; }
+  .hotel-desc { color: var(--ink); font-style: italic; margin-bottom: 6px; }
+
+  
+  .details-table { width: 100%; margin-top: 4px; border-collapse: collapse; }
+  .details-table td { padding: 1px 1px 1px 0; vertical-align: middle; }
+  .details-table td.label { color: var(--muted); width: 70px;font-weight: 900;font-size: 10px;font-family: 'JetBrains Mono', monospace;text-transform: uppercase;letter-spacing: 0.5px;padding-top: 4px;}
+
+  .ferry-table { width: 100%; border-collapse: collapse; }
+  .ferry-table th { background: var(--sea); color: var(--white); padding: 6px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+  .ferry-table td { border-bottom: 1px solid #DDE8EE; vertical-align: middle; }
+  .ferry-table tr:nth-child(even) td { background: #F2F8FB; }
+  .ferry-table th:first-child,
+  .ferry-table td:first-child {width: 80px; min-width: 80px;white-space: nowrap;}
+  
+  .badge-time { font-family: 'JetBrains Mono', monospace; color: var(--white); background: var(--sea); padding: 1px 4px; border-radius: 4px; font-weight: 500; }
+  .time-tag { font-family: 'JetBrains Mono', monospace;  color: var(--ferry-bd); font-weight: 700; }
+  .price-tag { background: #C8E8F0; color: var(--sea); font-weight: 600; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+  .alert { background: #FFF3CD; border: 1px solid #FFCA28; border-radius: 8px; padding: 8px 10px; color: #6B4F00; margin: 8px 0; display: flex; gap: 6px; }
+  .alert-icon { flex-shrink: 0; }
+
+  .btn-map, .hotel-link, .ferry-body a {font-size: 90%;display: inline-flex;align-items: center;gap: 4px;background: rgba(26, 127, 160, 0.1);color: var(--sea-mid);padding: 2px 5px;border-radius: 10px;text-decoration: none;font-weight: 600;font-size: 83%;border: 1px solid rgba(26, 127, 160, 0.2);}
+
+  .h2-nav { margin-left: 0; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .h2-date { flex: 1; text-align: center; }
+  .btn-home, .btn-prev, .btn-next {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border: none; border-radius: 8px; cursor: pointer;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease;
+    font-size: 15px;
+  }
+  .btn-home { background: #ffe7cc; color: var(--sea); }
+  .btn-prev { background: #e0eef5; color: var(--sea); }
+  .btn-next { background: #d4f0e4; color: var(--sea); }
+  .btn-home:active, .btn-prev:active, .btn-next:active { transform: translate(1px, 1px); }
+  .btn-prev:disabled, .btn-next:disabled { opacity: 0.3; cursor: default; }
+
+  /* Hamburger button */
+  .btn-hamburger {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; width: 30px; height: 30px;
+    border: none; border-radius: 8px; cursor: pointer;
+    background: var(--sea); flex-shrink: 0;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.15s ease;
+    padding: 0;
+    margin-left: 3px;
+  }
+  .btn-hamburger:active { transform: translate(1px, 1px); }
+  .btn-hamburger span {
+    display: block; width: 16px; height: 2px;
+    background: var(--white); border-radius: 2px;
+  }
+
+  /* Popup overlay */
+  #nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+  #nav-overlay.open { display: block; }
+
+  /* Popup panel */
+  #nav-popup {
+    position: fixed; top: 0; left: 0;
+    width: 260px; height: 100%;
+    background: var(--stone);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+    z-index: 1001; overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  #nav-popup.open { transform: translateX(0); }
+
+  #nav-popup-header {
+    background: linear-gradient(160deg, var(--sea) 0%, var(--sea-mid) 100%);
+    padding: 16px 12px 12px;
+    color: var(--white);
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #nav-popup-close {
+    background: rgba(255,255,255,0.2); border: none; color: var(--white);
+    width: 28px; height: 28px; border-radius: 6px; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  #nav-popup ul { list-style: none; padding: 8px; }
+  #nav-popup ul li {
+    background: var(--white); border-radius: 6px; margin-bottom: 4px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  #nav-popup ul li button {
+    width: 100%; background: none; border: none; cursor: pointer;
+    display: flex; align-items: center; padding: 8px 10px; gap: 8px;
+    text-align: left;
+  }
+  #nav-popup ul li button:active { background: var(--sky); border-radius: 6px; }
+  #nav-popup .nav-day-badge {
+    font-family: 'JetBrains Mono', monospace; background: var(--sky);
+    color: var(--sea); font-size: 10px; font-weight: 700;
+    padding: 2px 5px; border-radius: 3px; white-space: nowrap; min-width: 52px; text-align: center;
+  }
+  #nav-popup .nav-day-title {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+  }
+  #nav-popup .nav-sep {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+    padding: 8px 10px 3px; font-weight: 600;
+  }
+/* ── Expense table toggle ── */
+.expense-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 0 0 6px;
+  color: inherit;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+.expense-toggle-btn.open { transform: rotate(90deg); }
+.expense-tbody { display: none; }
+.expense-tbody.open { display: table-row-group; }
+</style>
+</head>
+<body>
+
+<section id="accueil" class="page" style="padding: 8px;">
+  <div class="hero-mobile">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+      <button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours" style="background:rgba(255,255,255,0.25); flex-shrink:0;"><span></span><span></span><span></span></button>
+      <h1 style="flex:1; text-align:center;">Croatie Dalmatienne <em>île-en-île</em></h1>
+    </div>
+    <p style="font-size:12px; opacity:0.85; text-align:center;">Nantes ➔ Dubrovnik / Split ➔ Nantes</p>
+  </div>
+
+  <ul class="tdm-list">
+    <li class="tdm-item"><div onclick="showPage('02-07')" class="tdm-link"><span class="tdm-day">02 Juil</span><span class="tdm-title">Nantes — Dubrovnik — Arrivée & installation</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('03-07')" class="tdm-link"><span class="tdm-day">03 Juil</span><span class="tdm-title">Dubrovnik — Remparts & Architecture</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('04-07')" class="tdm-link"><span class="tdm-day">04 Juil</span><span class="tdm-title">Dubrovnik — Fort, Mont Srđ & Plage</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('05-07')" class="tdm-link"><span class="tdm-day">05 Juil</span><span class="tdm-title">Dubrovnik ➔ Korčula — Découverte cité</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('06-07')" class="tdm-link"><span class="tdm-day">06 Juil</span><span class="tdm-title">Korčula — Scooter, Criques & Vignobles</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('07-07')" class="tdm-link"><span class="tdm-day">07 Juil</span><span class="tdm-title">Korčula ➔ Hvar — Ferry & découverte Hvar</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('08-07')" class="tdm-link"><span class="tdm-day">08 Juil</span><span class="tdm-title">Hvar —  Journée Scooter & Patrimoine</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('09-07')" class="tdm-link"><span class="tdm-day">09 Juil</span><span class="tdm-title">Hvar ➔ Bol (Brač) Découverte de Bol</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('10-07')" class="tdm-link"><span class="tdm-day">10 Juil</span><span class="tdm-title">Bol (Brač) — Scooter Arrière-pays</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('11-07')" class="tdm-link"><span class="tdm-day">11 Juil</span><span class="tdm-title">Bol ➔ Split — Patrimoine historique ➔ Trogir</span><span class="tdm-arrow">❯</span></div></li>
+    <li class="tdm-item"><div onclick="showPage('12-07')" class="tdm-link"><span class="tdm-day">12 Juil</span><span class="tdm-title">Trogir ➔ Vol Retour Nantes</span><span class="tdm-arrow">❯</span></div></li>   
+	<li class="tdm-item"><div onclick="showPage('Documents')" class="tdm-link"><span class="tdm-day" style="background:var(--ferry-bd); color:white">📄 Documents</span><span class="tdm-title"> d'identité</span><span class="tdm-arrow">❯</span></div></li>
+	<li class="tdm-item"><div onclick="showPage('Vocabulaire')" class="tdm-link"><span class="tdm-day" style="background:var(--ferry-bd); color:white">💬 Parler </span><span class="tdm-title"> Vocabulaire de base</span><span class="tdm-arrow">❯</span></div></li>
+	<li class="tdm-item"><div onclick="showPage('Dépenses')" class="tdm-link"><span class="tdm-day" style="background:var(--ferry-bd); color:white">💰 Tableau</span><span class="tdm-title"> Récapitulatif des Dépenses</span><span class="tdm-arrow">❯</span></div></li>
+  </ul>
+
+  <!-- BLOC WIKIPEDIA -->
+<div style="
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:6px 0 3px 2px;
+  display:flex;
+  align-items:center;
+  gap:6px;">
+  <img src="https://fr.wikipedia.org/static/images/icons/wikipedia.png"
+       alt="Wikipedia"
+       style="width:14px;height:14px;">
+  Références Wikipédia
+</div>
+
+<ul class="tdm-list">
+  <li class="tdm-item">
+    <a href="https://fr.wikipedia.org/wiki/Dubrovnik" target="_blank" rel="noopener noreferrer" class="tdm-link">
+      <span class="tdm-day">02 Juil</span>
+      <span class="tdm-title">Dubrovnik</span>
+    </a>
+  </li>
+
+  <li class="tdm-item">
+    <a href="https://fr.wikipedia.org/wiki/Kor%C4%8Dula" target="_blank" rel="noopener noreferrer" class="tdm-link">
+      <span class="tdm-day">05 Juil</span>
+      <span class="tdm-title">Île de Korčula</span>
+    </a>
+  </li>
+
+  <li class="tdm-item">
+    <a href="https://fr.wikipedia.org/wiki/Hvar" target="_blank" rel="noopener noreferrer" class="tdm-link">
+      <span class="tdm-day">07 Juil</span>
+      <span class="tdm-title">Île de Hvar</span>
+    </a>
+  </li>
+
+  <li class="tdm-item">
+    <a href="https://fr.wikipedia.org/wiki/Bra%C4%8D" target="_blank" rel="noopener noreferrer" class="tdm-link">
+      <span class="tdm-day">09 Juil</span>
+      <span class="tdm-title">Île de Brač</span>
+    </a>
+  </li>
+
+<li class="tdm-item">
+  <div class="tdm-link">
+    <span class="tdm-day">11 Juil</span>
+    <span class="tdm-title">
+      <a href="https://fr.wikipedia.org/wiki/Split" target="_blank" rel="noopener noreferrer">Split</a>
+      &amp;
+      <a href="https://fr.wikipedia.org/wiki/Trogir" target="_blank" rel="noopener noreferrer">Trogir</a>
+    </span>
+  </div>
+</li>
+</ul>
+
+</section>
+
+<section id="02-07" class="page">
+  
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Jeudi 2 juillet</span></h2>
+  <div class="page-desc">Nantes — Dubrovnik — Arrivée & installation</div>
+ 
+ <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">✈️ Parking Aéroport</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://aeropark-nantes.fr/" target="_blank" rel="noopener noreferrer">Aeropark</a></td></tr>
+
+          <tr><td class="label">Enregistrement</td><td><span class="badge-time">15:00h</span></td></tr>
+          <tr><td class="label">Réservation</td><td>
+			<a href="https://drive.google.com/file/d/1lWxuXx6EqWoZ9uoupjYG7-RDX-QOC2gd/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Bon de reservation</a>
+
+			</td>
+		  </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+ <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">✈️ Vol Nantes → Dubrovnik</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.volotea.com/fr/" target="_blank" rel="noopener noreferrer">Volotea</a></td></tr>
+
+          <tr><td class="label">Enregistrement</td><td><span class="badge-time">14:35h à 16:00h</span></td></tr>
+          <tr><td class="label">Embarquement</td><td><span class="badge-time">16:00h à 16:15h</span></td></tr>
+          <tr><td class="label">Sièges</td><td> 12A et 12B</td></tr>
+          <tr><td class="label">Décollage</td><td>16:35h</td></tr>
+          <tr><td class="label">Atterrissage</td><td>19:05h</td></tr>
+          <tr><td class="label">Réservation</td><td>
+			<a href="https://drive.google.com/file/d/1GINTH6PyeKC5VXDgjJQdG95dUXTyLpGQ/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Board Pass  </a>
+			<a href="https://drive.google.com/file/d/19mZhqKZhldP3EBiTJlUvxxVi7uhkqlzh/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Scan FR</a>
+			<a href="https://drive.google.com/file/d/10uU3gERz5pcx_CQaJRtwh4batjrY9ZiY/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Scan LY</a>
+			</td>
+		  </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">🚌 Navette Aéroport → Gruž</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://platanus.hr/fr" target="_blank" rel="noopener noreferrer">platanus.hr</a> (synchronisée aux vols)</td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">19h30</span> (env. 30 min après atterrissage)</td></tr>
+          <tr><td class="label">Arrêts</td><td>Aéroport → Pile Gate  → Gare Gruž</td></tr>
+		  <tr><td class="label">Tarif</td><td><span class="price-tag">10.00 € / pers</span> (Durée ~35mn)</td></tr>
+          <tr><td class="label">Réservation</td><td>
+		  <a href="https://drive.google.com/file/d/1bqDfQYc3iQ2GSr1dm3g_Qj0cXwZAW-42/view?usp=sharing/view" target="_blank" rel="noopener noreferrer">Scan </a>
+		  <a href="https://drive.google.com/file/d/12v54oxpA18fpNSoLc7eJN-7bJQlKcBeW/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Facture</a>
+		  </td></tr>
+        </table>
+        <p style="font-size:13px; color:var(--olive); font-style:italic; margin-top:6px;">Descendre à l'arrêt <a href="https://maps.google.com/?q=Pile+Gate+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Porte de Pile</a> (Entrée Vieille Ville) — Divina Blue Apartments à 6 min à pied.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🏨 Hébergement (Nuit 1/2)</h3>
+    <div class="hotel-box">
+      <div ><a class="hotel-link" href="https://maps.app.goo.gl/p1DooH3BnjFiYLJt5" target="_blank" rel="noopener noreferrer">Divina Blue Apartments </a>   <a class="hotel-stars">⭐ 4.0 / 5 Google Maps</a></div>
+      <div class="hotel-addr">📍 Palmotićeva ul. 14, 20000 Dubrovnik</div>
+      <div class="hotel-price">151€ / nuit · pas de petit-déjeuner inclus</div>
+      <div class="hotel-desc">Au cœur intra-muros : Appartement cosy avec kitchenette et clim, situé sur une ruelle pittoresque à l'intérieur des remparts — à quelques mètres du Stradun. Accueil par l'hôte (Bozo). Idéal pour profiter de la Vieille Ville à pied.</div>
+    </div>
+    
+    <div class="alert">
+      <span class="alert-icon">🧳</span>
+      <span>L'appartement est <strong>intra-muros</strong>. Depuis l'arrêt à la Porte de Pile, comptez 5–8 min à pied avec les bagages (ruelles pavées et marches).</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">🌙 Soirée</div>
+    <ul class="act-list">
+      <li>Arrivée vers 19h30. Dîner dans le <a href="https://maps.google.com/?q=Lapad+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">quartier Lapad</a> — promenade animée, nombreuses konobe en bord de mer (Lapadska obala).</li>
+    </ul>
+  </div>
+</section>
+
+<section id="03-07" class="page">
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Vendredi 3 juillet</span></h2>
+  <div class="page-desc">  <a class="icon-link" href="https://fr.wikipedia.org/wiki/Dubrovnik" target="_blank" rel="noopener"></a> Dubrovnik — Remparts & Architecture<br>
+  <a class="hotel-link" href="https://drive.google.com/file/d/1ri5bqR33tjtY1Qn2jBTdYe03DlHcGg7j/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="geo-link"> Pass FR</a>
+  <a class="hotel-link" href="https://drive.google.com/file/d/1DgDALCiX1B2FOarmGkmHl0xt_aoCCfNc/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="geo-link"> Pass LY</a>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Matin · Architecture & remparts</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Pile+Gate+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Porte de Pile</a><br>Sortie de la Vieille Ville.</li>
+      <li><a href="https://maps.google.com/?q=Dubrovnik+City+Walls" target="_blank" rel="noopener noreferrer" class="geo-link">Les Remparts</a> (Gradske Zidine)<br>Durée : 1h30–2h 1,94 km de chemin de ronde . Vue panoramique sur les toits orange et la mer. entre 12h et 15h pour <a href="https://www.dubrovnikpass.com/" target="_blank" rel="noopener noreferrer" class="geo-link">éviter la foule.</a></li>
+      <li><a href="https://maps.google.com/?q=Stradun+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Stradun</a>  (Placa) Gratuit<br>L'artère principale pavée en calcaire poli, bordée de palais vénitiens.</li> 
+	  <li><a href="https://maps.app.goo.gl/Hi7DxW9YtLjpSZE87" target="_blank" rel="noopener noreferrer" class="geo-link">Fontaine Onofrio</a> Gratuit<br>Fontaine circulaire d'eau de source érigée en 1438 et ornée de masques raffinés en pierre sculptée.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Après-midi · Palais et musées</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Rector's+Palace+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Palais du Recteur</a><br>(Knežev Dvor): Chef-d'œuvre gothico-Renaissance du XVe s. Musée de la ville.</li>
+      <li><a href="https://maps.app.goo.gl/GqxrQ1FZGgaUPwi28" target="_blank" rel="noopener noreferrer" class="geo-link">Cathédrale de l'Assomption</a> Gratuit<br>(Prvostolnica Uznesenja Blažene Djevice Marije) : Trésor baroque renfermant des reliques et un polyptyque de l'école de Titien.</li>
+      <li><a href="https://maps.app.goo.gl/rMMUBZWp9EyPJ6z38" target="_blank" rel="noopener noreferrer" class="geo-link">Église Saint-Blaise</a> Gratuit<br>(Crkva sv. Vlaha) : Joyau baroque du XVIIIe s. Statuette médiévale en argent de Saint Blaise tenant une maquette de Raguse.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">🌙 Soirée · Vie locale</div>
+    <ul class="act-list">
+      <li><strong>Dîner en Vieille Ville</strong><br> <em>Konoba Dubrava</em> (authentique), <em>Nishta</em> (végétarien) ou <em>Proto</em> (terrasse de mer).</li>
+      <li><strong>Retour en bus.</strong><br></li>
+    </ul>
+  </div>
+</section>
+
+<section id="04-07" class="page">
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Samedi 4 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Dubrovnik" target="_blank" rel="noopener"></a> Dubrovnik — Fort, Mont Srđ & Plage<br>
+  <a class="hotel-link" href="https://drive.google.com/file/d/1ri5bqR33tjtY1Qn2jBTdYe03DlHcGg7j/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="geo-link"> Pass FR</a>
+  <a class="hotel-link" href="https://drive.google.com/file/d/1DgDALCiX1B2FOarmGkmHl0xt_aoCCfNc/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="geo-link"> Pass LY</a>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Matin · Fortifications & panoramas</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Fort+Lovrijenac+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Fort Lovrijenac</a><br>Forteresse du XIe s. hors les murs, sur un rocher de 37 m. Vue imprenable. Inscription légendaire sur la liberté.</li>
+      <li><a href="https://maps.google.com/?q=Dubrovnik+Cable+Car" target="_blank" rel="noopener noreferrer" class="geo-link">Téléphérique</a> 30€/pers<br>Montée du Mont Srđ à 405 m d'altitude pour un panorama à 360° sur Dubrovnik et les îles. Fort Impérial et musée de la guerre. Tarif : ~25 €/pers.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Après-midi · Plage</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Banje+Beach+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">Plage Banje</a><br>La plus célèbre de Dubrovnik, à 5 min à pied. Galets fins, eaux cristallines, vue sur les remparts. Section privée et publique.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">🚌 Trajet en bus Ligne 1A ou 1B ou 3 → Gruž</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a class="hotel-link" href="https://www.libertasdubrovnik.hr/en" target="_blank" rel="noopener noreferrer">Libertas</a>&nbsp&nbsp<a class="hotel-link" href="https://www.libertasdubrovnik.hr/upload/file_url_1778844772.pdf" target="_blank" rel="noopener noreferrer"> Ligne 1A ou 1B</a> </td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">17h20</span>&nbsp&nbsp<a href="https://maps.app.goo.gl/FWB4isB3BeHkVTZ47" target="_blank" rel="noopener noreferrer" class="geo-link">Pile Gate</a></td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">17h35</span> </td></tr>
+          <tr><td class="label">Arrêts</td><td>Kampus > Boninovo > OD republike > Vukovarska > <a href="https://maps.app.goo.gl/H1Ki1N9RKGVgtpUg8" target="_blank" rel="noopener noreferrer" class="geo-link">Luka Gruž1</a></td></tr>
+          <tr><td class="label">Tarif</td><td> DBV pass</td></tr>
+        </table>
+        <p style="font-size:13px; color:var(--olive); font-style:italic; margin-top:6px;">Descendre à l'arrêt <a href="https://maps.app.goo.gl/H1Ki1N9RKGVgtpUg8" target="_blank" rel="noopener noreferrer" class="geo-link">Luka Gruž1</a> marche 3min vers B&B Sol</p>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="card">
+    <div class="act-group-label">🌙 Soirée · Gruž</div>
+    <ul class="act-list">
+	<li> Promenade au <a href="https://maps.google.com/?q=Gruz+Market+Dubrovnik" target="_blank" rel="noopener noreferrer" class="geo-link">marché (Gradska Tržnica)</a> et restaurants de port.</li>
+    </ul>
+  </div>
+
+  <div class="card">     
+    <h3>🏨 Hébergement (Nuit 3)</h3>
+    <div class="hotel-box">
+      <div ><a class="hotel-link" href="https://maps.app.goo.gl/PxYQ6DphnMiMjtAh9" target="_blank" rel="noopener noreferrer">B&B Sol</a><a class="hotel-stars">⭐ 4.2 / 5 Google Maps</a></div>
+      
+      <div class="hotel-addr">📍 Obala Ivana Pavla II 13 — sur le quai de Gruž</div>
+      <div class="hotel-price">159€ / nuit · Petit-déjeuner inclus</div>
+      <div class="hotel-desc">Situé directement sur le port de Gruž, à quelques pas de l'embarcadère du catamaran — parfait pour un départ matinal. Bus vers la Vieille Ville tout proches.</div>
+    </div>
+  </div>
+
+</section>
+
+<section id="05-07" class="page">
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Dimanche 5 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Kor%C4%8Dula"  target="_blank" rel="noopener"></a> Dubrovnik ➔ Korčula — Découverte cité</div>
+
+  <div class="card">
+    <div class="act-group-label">Matin · Departure</div>
+    <ul class="act-list">
+      <li>Petit-déjeuner rapide à l'Hotel. L'embarcadère est à moins de 100 m.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">⛵ Traversée : Dubrovnik ➔ Korčula Town</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.ksc.hr/dubrovnik-korcula/" target="_blank" rel="noopener noreferrer">KSC</a> line 844  <a href="https://www.ksc.hr/fleet/ksc-naranca/" target="_blank" rel="noopener noreferrer">Naranca</a></td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">10h30</span> <a href="https://maps.app.goo.gl/jqTqZdvKZxMTcRjg8" target="_blank" rel="noopener noreferrer" class="geo-link">Embarcadère de Gruž </a> </td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">12h30</span> — Korčula Town</td></tr>
+          <tr><td class="label">Tarif</td><td><span class="price-tag">30.00 € / pers</span> (Durée 2h00)</td></tr>
+          <tr><td class="label">Réservation</td><td>
+
+		  <a href="https://drive.google.com/file/d/1iGhFopbroDFlRVsbnsW0zdNDpTi96wG3/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Ticket</a>
+		  <a href="https://drive.google.com/file/d/1nI8eaF7CDlJWETZ94GMn_Moaf2zcdcCC/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan FR</a>
+		  <a href="https://drive.google.com/file/d/1X-XKY6X9fHiMmczi4TKjYgrQvuvmcCJt/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan LY</a>		  
+		  </td></tr>  
+        </table>
+        <p style="font-size:12px; color:var(--terracotta); font-weight:600; margin-top:4px;">⚡ Présence au quai 15 min avant. Escale à Mljet.</p>
+      </div>
+    </div>
+  </div>
+ 
+ <div class="card">
+    <div class="act-group-label">Après-midi · Premiers pas à Korčula</div>
+	<div class="card">
+		Véritable musée en plein air, la ville de Korcula présente une physionomie en arête de poisson. Située à l’est de l’île, sur une petite péninsule, elle est un incontournable joyau et l’un des sites fortifiés les plus importants de l’ancienne République de Raguse (Dubrovnik). Tours et remparts médiévaux accueillent le visiteur dans un dédale de rues sinueuses et cernées de beaux édifices à l’architecture vénitienne et années 1930. Une ambiance animée, des restaurants, des glaciers confèrent un charme certain à la ville de Korcula.</div>
+    <ul class="act-list">
+      <li>Déjeuner en terrasse: le long des remparts face à la mer rue <a href="https://maps.app.goo.gl/j2vshRp9ngNcvCWM8" target="_blank" rel="noopener noreferrer" class="geo-link">Setaliste Petra Kanavelica </a> pour goûter aux *Zrnovski Makaroni* (pâtes locales traditionnelles).</li>
+      <li><strong>Immersion : </strong> Flânerie architecturale dans les ruelles en arête de poisson.</li>
+      <li><a href="https://maps.app.goo.gl/vxN85qCpnfKVWAC56" target="_blank" rel="noopener noreferrer" class="geo-link"> Palais Gabriellis </a> ( musée de la Ville ).</li>
+	  <li><a href="https://maps.app.goo.gl/QohGas7uieWUT2x67" target="_blank" rel="noopener noreferrer" class="geo-link"> Maison de Marco polo</a> <br>Certaines théories supposent que Marco Polo, le célèbre navigateur vénitien qui a notamment parcouru l’Asie, serait né à Korčula. En effet, à son époque, l’île faisait bien partie de la République de Venise, les registres attestent de l’existence d’une famille avec un nom similaire, et Marco Polo aurait participé à la bataille de Korčula. Quoi qu’il en soit, un petit musée lui est désormais dédié dans le village. Il présente à la fois l’intérêt de se situer dans un beau bâtiment médiéval et de permettre de mieux comprendre qui était Marco Polo, son voyage et l’Europe médiévale dans laquelle il évoluait. L’entrée coûte 6 €.</li>
+	  <li><a href="https://maps.app.goo.gl/9RNfe1QYokM9qK5m7" target="_blank" rel="noopener noreferrer" class="geo-link"> Cathédrale St marc</a><div>Dans la vieille ville se dresse la superbe cathédrale Saint-Marc dont le campanile domine toute la cité et offre une vue à 360°. Les superbes sculptures du portail ont été réalisées par le sculpteur italien Bonino da Milano. Érigée en pierre calcaire de l’île entre le XVe et le début du XVIe siècles dans un style qui marie le gothique et le Renaissance, cette cathédrale possède trois nefs et son plafond rappelle une coque de bateau inversé. Un véritable trésor de la peinture se cache sur ses murs : un tableau du Tintoret, peint en 1550 et représentant saint Marc, saint Jérôme et saint Barthélémy, est accroché derrière le ciborium.Ascension du clocher pour une vue imprenable sur les toits et l'archipel.</div></li>  
+      <li><a href="https://maps.app.goo.gl/pQQ63NJT9ZSy44Hw7" target="_blank" rel="noopener noreferrer" class="geo-link">Pause fraîcheur & Glace </a><br>Halte gourmande chez Gelateria Marco Polo.</li>
+	  <li><a href="https://maps.google.com/?q=Revelin+Tower+Korcula" target="_blank" rel="noopener noreferrer" class="geo-link">Tour Revelin</a><br>beau Panorama.</li>
+      <li><a href="https://maps.app.goo.gl/t4v1nxvXrEAEKEWbA" target="_blank" rel="noopener noreferrer" class="geo-link">Zakerjan</a><br>Plage de galets en contrebas des remparts pour un premier bain dans les eaux cristallines de l'île.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>🏨 Hébergement Korčula (Nuit 1/2)</h3>
+    <div class="hotel-box">
+      <div ><a class="hotel-link" href="https://maps.google.com/?q=Lemon%26Stone+Korcula" target="_blank" rel="noopener noreferrer">Lemon & Stone</a><a class="hotel-stars">⭐ 5.0 / 5 Google Maps</a></div>      
+      <div class="hotel-addr">📍 Ul. Kalafata, 20260 Korčula — au cœur fortifié</div>
+      <div class="hotel-price">124€ / nuit · pas de petit-déjeuner inclus</div>
+      <div class="hotel-desc">Charmant appartement entièrement rénové, en plein cœur de la vieille ville. L'hôte accueille personnellement au débarcadère.</div>
+    </div>
+  </div>
+
+</section>
+
+<section id="06-07" class="page">
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Lundi 6 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Kor%C4%8Dula"  target="_blank" rel="noopener"></a> Korčula — Scooter, Criques & Vignobles</div>
+
+  <div class="card">
+    <div class="act-group-label">🛵 Location Scooter</div>
+    <div class="hotel-box" style="background:#F0F8FF; border-color:var(--sea-mid);">
+      <a class="btn-map" href="https://maps.app.goo.gl/NP3rJ1N8hFPM2ns59" target="_blank" rel="noopener noreferrer">🛵 titan-rent</a> 
+	  <a class = "hotel-link" href="https://drive.google.com/file/d/1n3BJRgRg9o8lE9ehUbW3zxC6nVgN5qLn/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Résa</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Retrait Scooter</div>
+    <ul class="act-list">
+      <li><strong>09h30 ~ 10h00 : Loueur.</strong> Installation et conseils de l'équipe sur les meilleurs itinéraires de l'île.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Boucle Côtes & Criques  <a class="btn-map" style="margin-top:8px; display:inline-flex;" href="https://maps.app.goo.gl/bPRQWFF3MUnC1GrYA" target="_blank" rel="noopener noreferrer">Itineraire</a></div>
+    trajet environ 77 km ~ 1h54 de route 
+    <ul class="act-list">
+	  <li><a href="https://maps.app.goo.gl/vUchxuhv6az6giUE6" target="_blank" rel="noopener noreferrer" class="geo-link">Lumbarda</a> <br>Vignobles & Caves : Dégustation matinale chez des vignerons renommés (<a href="https://maps.google.com/?q=Bire+Winery+Lumbarda" target="_blank" rel="noopener noreferrer" class="geo-link">Bire Winery</a>, <a href="https://maps.google.com/?q=Vitis+Winery+Lumbarda" target="_blank" rel="noopener noreferrer" class="geo-link">Vitis</a> ou <a href="https://maps.google.com/?q=Lovric+Winery+Lumbarda" target="_blank" rel="noopener noreferrer" class="geo-link">Lovrić</a>).</li>
+      <li><a href="https://maps.google.com/?q=Przina+Beach+Lumbarda" target="_blank" rel="noopener noreferrer" class="geo-link">Vela Pržina</a><br>Première étape côté est de l'île. Grande plage de sable blanc rare en Dalmatie, eaux peu profondes et turquoises. Baignade rafraîchissante avant les fortes chaleurs.</li>
+      <li><a href="https://maps.google.com/?q=Kneze+Pupnat+Korcula+Croatia" target="_blank" rel="noopener noreferrer" class="geo-link">Kneže / Pupnat</a><br>Montée vers le village perché au cœur de l'île, vignes et oliviers à perte de vue. Route sinueuse offrant des panoramas sur les deux côtes.</li>
+      <li><a href="https://maps.google.com/?q=Racisce+Korcula+Croatia" target="_blank" rel="noopener noreferrer" class="geo-link">Račišće</a><br>Petit village de pêcheurs isolé sur la côte nord face à la péninsule de Pelješac. Déjeuner dans une konoba locale, les pieds dans l'eau. Ambiance authentique, quasi pas de touristes.</li>
+      <li><a href="https://maps.google.com/?q=Pupnatska+Luka+Beach+Korcula" target="_blank" rel="noopener noreferrer" class="geo-link">Pupnatska Luka</a><br>Descente vers l'une des plages de galets les plus sauvages de l'île, nichée dans une pinède. Eaux cristallines pour une longue baignade de l'après-midi.</li>
+      <li><strong>Retour à Korčula Town.</strong><br>Route intérieure à travers les vignobles. Restitution du scooter à 19h00.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">🌙 Soirée · Spectacle Épique & Tradition</div>
+    <ul class="act-list">
+      <li><strong><a href="https://maps.google.com/?q=Moreska+Korcula+Old+Town" target="_blank" rel="noopener noreferrer" class="geo-link">Moreška</a> :</strong> Danse guerrière de sabres unique à Korčula — combat en costume traditionnel entre Maures et Chrétiens. Se joue en vieille ville le lundi soir en juillet.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="07-07" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Mardi 7 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Hvar"  target="_blank" rel="noopener"></a> Korčula ➔ Hvar — Ferry & découverte Hvar</div>
+
+  <div class="card">
+    <div class="act-group-label">☀️ Matinée libre à Korčula</div>
+    <ul class="act-list">
+      <li>Petit-déjeuner tranquille dans la vieille ville.</li>
+      <li>Dernière promenade dans les ruelles médiévales et le long des remparts.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">⛵ Traversée maritime Korčula ➔ Hvar</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie </td><td> <a href="https://www.tp-line.hr/en/timetable" target="_blank" rel="noopener noreferrer">Tp Line</a> Ligne 842
+		  <a href="https://www.google.com/maps/place/TP+LINE+catamaran+ferry+terminal/@42.9435038,17.1149434,27019m/data=!3m1!1e3!4m6!3m5!1s0x134a51c0168e95ef:0x7b1d89649e434b52!8m2!3d42.9603118!4d17.1367345!16s%2Fg%2F11s_xpjls0!5m1!1e1?entry=ttu&g_ep=EgoyMDI2MDYyMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Puntamika</a>
+		  </td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">10h10</span> — Korčula</td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">11h40</span> — Hvar</td></tr>
+          <tr><td class="label">Tarif</td><td><span class="price-tag">25 € / pers</span> (30mn)</td></tr>
+          <tr><td class="label">Réservation</td><td>
+		  
+		  <a href="https://drive.google.com/file/d/11_zZR8f3F4Gjw5OmEsvins6sqq__LnaP/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Ticket</a>
+		  <a href="https://drive.google.com/file/d/15NpB69iNxuOiOAMw-cywJt4RBwrM7juC/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan FR</a>
+		  <a href="https://drive.google.com/file/d/16aKQn1XVih4pD7PC3bYMu8Um2YZTzbhc/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan LY</a>		  
+		  </td></tr>
+		</table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🏨 Hébergement Hvar (Nuit 1/2)</h3>
+    <div class="hotel-box">
+	 <div ><a class="hotel-link" href="https://maps.app.goo.gl/7enMZpkAvS3c6XFVA" target="_blank" rel="noopener noreferrer">Villa Mili</a><a class="hotel-stars">⭐ 4.8 / 5 Google Maps</a></div>  
+      <div class="hotel-addr">📍 Mate Hraste 3, 21450 Hvar</div>
+       <div  class="hotel-addr" style ="font-size:80%;color:var(--terracotta);font-weight: bold;"> ⚠ RV 12H AVEC LE PROPRIETAIRE</div>
+     <div class="hotel-price">145€ / nuit · pas de petit-déjeuner inclus</div>
+    </div>
+  </div>
+
+   <div class="card">
+    <div class="act-group-label">🔄 Lessives mi-voyage</div>
+    <ul class="act-list">
+      <li><a class="btn-map" href="https://maps.app.goo.gl/C2CS2JPJEgHQTvnb9" target="_blank" rel="noopener noreferrer">🔄  XXLojko</a> ⭐⭐⭐⭐ <br>Travail soigné et pas cher. Service agréable. Excellente adresse.</li>
+      <li><a class="btn-map" href="https://maps.app.goo.gl/7GAiupj5gjSHv59V8" target="_blank" rel="noopener noreferrer">🔄  Praonica rublja</a> ⭐⭐⭐⭐ <br>Linge très propre et professionnels super sympas , je recommande !!</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Après-midi · HVAR Renaissance Vénitienne</div>
+		<div class="card">Sur l’île de Hvar, 24 siècles de civilisation ont laissé leur empreinte dans la pierre et la culture locales. Important centre stratégique et naval dès l’Antiquité, Hvar est habitée par les Illyriens dès le IVe siècle avant notre ère puis par les Grecs qui fondent la ville de Stari Grad dont les vestiges sont aujourd’hui classés au patrimoine mondial de l’Unesco. Les Romains puis les Byzantins leur succèdent jusqu’à l’arrivée au VIIe siècle de peuples slaves. Après plusieurs siècles de rivalités entre Byzance, Venise et les souverains hungaro-croates, Hvar est annexée par les Vénitiens au XIVe siècle. S’ouvre alors une période d’opulence jusqu’en 1797, seulement ternie par les assauts turcs de 1571 qui détruisent la ville de Hvar. Après une courte domination française entre 1806 et 1812, l’île est gouvernée par les Autrichiens jusqu’en 1918. Hvar devient yougoslave en 1922 puis croate en 1991. </div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Saint+Stephen's+Square+Hvar" target="_blank" rel="noopener noreferrer" class="geo-link">Place Saint-Étienne</a><br>(Trg Sv. Stjepana Pjaca): La plus grande place de Dalmatie. Bordée de palais vénitiens du XVIe s. et d'une loggia.</li>
+      <li><a href="https://maps.google.com/?q=Cathedral+of+St.+Stephen+Hvar" target="_blank" rel="noopener noreferrer" class="geo-link">Cathédrale Saint-Étienne</a><br> (Katedrala sv. Stjepana) : Édifice Renaissance doté d'un magnifique clocher romano-gothique.</li>
+      <li><a href="https://maps.google.com/?q=Hvar+Theater+and+Arsenal" target="_blank" rel="noopener noreferrer" class="geo-link">Arsenal et Théâtre</a><br> (1612) : Le plus vieux théâtre communal d'Europe, ouvert à l'ensemble de la population historique.</li>
+    </ul>
+  </div>
+  
+  <div class="card">
+    <div class="act-group-label">🌅 Fin d'après-midi · Panorama</div>
+    <ul class="act-list">
+	  <li>Installation à Villa Mili.</li>
+	  <li><a href="https://maps.app.goo.gl/bGYGkHE56xGgMprb9" target="_blank" rel="noopener noreferrer" class="geo-link">Forteresse Fortica</a><br>(Španjola) : panorama sur la ville, les îles et la mer.</li>
+      <li>Vue exceptionnelle sur Hvar Town et les îles Pakleni.</li>
+      <li>Coucher de soleil depuis les remparts.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">🌙 🌙 Soirée</div>
+    <ul class="act-list">
+      <li>Dîner dans une konoba traditionnelle.</li>
+      <li>Promenade sur la Riva illuminée.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="08-07" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Mercredi 8 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Hvar"  target="_blank" rel="noopener"></a> Hvar —  Journée Scooter & Patrimoine</div>
+
+  <div class="card">
+    <div class="act-group-label">🛵 Location Scooter</div>
+    <div class="hotel-box" style="background:#F0F8FF; border-color:var(--sea-mid);">      
+	  <a class="btn-map" href="hhttps://www.real-hvar.com/" target="_blank" rel="noopener noreferrer">🛵 Real-hvar</a>
+	  <a class = "hotel-link" href="https://drive.google.com/file/d/1iaY-2L7TKt0hoWavxbItHpBoZKd-fBT4/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> FR</a>
+	  <a class = "hotel-link"  href="https://drive.google.com/file/d/1rB2D9fULAg-fXDDf5bu5ZHCz-ZUQh28k/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> LY</a>
+    </div>
+  </div>
+
+	<div class="card">
+		<div class="act-group-label">Boucle visite de l'ile <a class="btn-map" style="margin-top:8px; display:inline-flex;" href="https://maps.app.goo.gl/nSmUigTQfyDM1kkb8" target="_blank" rel="noopener noreferrer">Itinéraire</a></div>
+			<div style="border-radius:8px; overflow:hidden; margin-top:6px; border:1px solid rgba(0,0,0,0.1);">
+		  
+		</div>    
+		<ul class="act-list">
+			<li><a href="https://maps.google.com/?cid=288420937511718816" target="_blank" rel="noopener noreferrer" class="geo-link" >Hvar Town </a><br> </li> 
+			<li><a href="https://maps.google.com/?cid=5303307864315995519" target="_blank" rel="noopener noreferrer" class="geo-link" >Brusje</a><br>🌿 Paysages de lavande et oliviers </li> 
+			<li><a href="https://maps.google.com/?cid=10106378069863440240" target="_blank" rel="noopener noreferrer" class="geo-link" >Velo Grablje</a><br>Ancien village de producteurs de lavande. </li> 
+			<li><a href="https://maps.google.com/?cid=288420937511719312" target="_blank" rel="noopener noreferrer" class="geo-link" >Stari Grad</a><br>Découverte de la plus ancienne ville de Croatie, Déjeuner sur le port</li> 
+			<li><a href="https://maps.app.goo.gl/GeZGwDogNZ9qBfEn6" target="_blank" rel="noopener noreferrer" class="geo-link" >Forteresse</a><br>Visite de la forteresse (Tvrdalj) de Petar Hektorović.</li>
+			<li><a href="https://maps.google.com/?cid=2068540303228860409" target="_blank" rel="noopener noreferrer" class="geo-link" >Plaine</a> de stari grad<br>🌾 Patrimoine Unesco.Ancien découpage agricole grec conservé depuis plus de 2400 ans.</li> 
+			<li><a href="https://maps.google.com/?cid=1572370620471189673" target="_blank" rel="noopener noreferrer" class="geo-link" >Pitve</a><br>🌊 Routes Côte sud sauvage </li> 
+			<li><a href="https://maps.google.com/?cid=7414985020019922252" target="_blank" rel="noopener noreferrer" class="geo-link" >Dubovica</a><br>baignade et photos. </li> 
+			<li><a href="https://maps.google.com/?cid=4496326108007116262" target="_blank" rel="noopener noreferrer" class="geo-link" >Malo Zaraće</a><br> </li> 
+			<li><a href="https://maps.google.com/?cid=2924391235222451756" target="_blank" rel="noopener noreferrer" class="geo-link" >Velo Zaraće</a><br> </li> 
+			<li><a href="https://maps.google.com/?cid=288420937511718816" target="_blank" rel="noopener noreferrer" class="geo-link" >Hvar Town</a><br></li>
+		</ul>
+	</div>
+
+  <div class="card">
+    <div class="act-group-label">🌅 Retour vers Hvar</div>
+    <ul class="act-list">
+      <li>Retour panoramique vers Hvar Town.</li>
+      <li>Restitution du scooter vers 18h30.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="09-07" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Jeudi 9 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Bra%C4%8D"  target="_blank" rel="noopener"></a> Hvar ➔ Bol (Brač) Découverte de Bol</div>
+  <div class="card">
+    <div class="act-group-label">Avant le départ de HVAR</div>
+    <ul class="act-list">
+      <li><a href="https://maps.app.goo.gl/aBzY2so66hKw8Vd36" target="_blank" rel="noopener noreferrer" class="geo-link">Monastère Franciscain</a> (5mn depuis l'hotel)</li>
+      <li>Brunch sur le port chez <a href="https://maps.app.goo.gl/YAzPtF6R8e3S2mZx8" target="_blank" rel="noopener noreferrer" class="geo-link">FigVar</a> par exemple</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">⛵ Liaison Directe  : Hvar Town ➔ Bol</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.jadrolinija.hr" target="_blank" rel="noopener noreferrer">Jadrolinija</a> (Ligne 659)</td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">11h10</span> — Présence au quai dès 11h00</td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">11h55</span> — Port central de Bol</td></tr>
+          <tr><td class="label">Tarif</td><td><span class="price-tag">25.00 € / pers</span> (Durée directe : 40 min)</td></tr>
+          <tr><td class="label">Réservation</td><td>
+		  <a href="https://drive.google.com/file/d/1wqX3CZfial-nqrLg1DBQzxEC3K3rK7Od/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Ticket</a>
+		  <a href="https://drive.google.com/file/d/1j1mY6MT2lLrG_4de_OAAad2TnBYiUpTr/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan FR</a>
+		  <a href="https://drive.google.com/file/d/1eCnvewhj3f592v3ADDvw9u2a9V2jBexz/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan LY</a>		 
+		  </td></tr>		  
+        </table>
+        <p style="font-size:12px; color:var(--olive); font-style:italic; margin-top:4px;">ℹ️ Cette ligne directe saisonnière élimine toute correspondance et maximise votre journée balnéaire tout en vous déposant à Bol à l'heure idéale pour le dejeuner.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Après-midi à Bol</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Stina+Winery+Bol" target="_blank" rel="noopener noreferrer" class="geo-link">Stina Winery</a><br>Déjeuner avec vue et dégustation de Pošip et cuisine locale dans une ambiance unique.</li>
+      <li><a href="https://maps.app.goo.gl/atgxymCPzHF7NE6x5" target="_blank" rel="noopener noreferrer" class="geo-link">Couvent Dominicain</a><br>Immersion culturelle et Marche apaisante le long du sentier côtier vers le <a href="https://maps.google.com/?q=Dominican+Monastery+Bol" target="_blank" rel="noopener noreferrer" class="geo-link"></a>. Jardin paisible en bord de mer.</li>
+      <li><a href="https://maps.google.com/?q=Zlatni+Rat+Beach+Bol" target="_blank" rel="noopener noreferrer" class="geo-link">Zlatni Rat</a><br> Plage : À cette heure, la foule se dissipe : lumière parfaite, baignade sereine.</li>
+      <li><strong>Soirée authentique :</strong> <br>Dîner dans une <em>konoba</em> du vieux village de Bol, loin du tumulte du port.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>🏨 Hébergement Bol (Nuit 1/2)</h3>
+    <div class="hotel-box">
+	<div ><a class="hotel-link" href="https://maps.app.goo.gl/tSTpTfuUUrY4ix2w9" target="_blank" rel="noopener noreferrer">Apartment Merlin</a><a class="hotel-stars">⭐ 4.8 / 5 Google Maps</a></div> 
+      <div class="hotel-addr">📍 Ul. Hrvatskog preporoda 10</div>
+      <div class="hotel-price">134€ / nuit · pas de petit-déjeuner inclus</div>
+    </div>
+  </div>
+</section>
+
+<section id="10-07" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Vendredi 10 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Bra%C4%8D"  target="_blank" rel="noopener"></a> Bol (Brač) — Scooter Arrière-pays</div>
+
+  <div class="card">
+    <div class="act-group-label">🛵 Location Scooter · Bol</div>
+    <div class="hotel-box" style="background:#F0F8FF; border-color:var(--sea-mid);">
+	  <a class="btn-map" href="https://maps.app.goo.gl/9ZdRv7JGdSE6MPZt6" target="_blank" rel="noopener noreferrer">🛵 Rental Brac</a> 
+	  <a class="hotel-link" href="https://drive.google.com/file/d/1Z6ByO3_rAiL_X0N6RUD8lnlWtt8P-BW-/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Résa</a>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">Visite de l'ile (~60km) <a class="btn-map" style="margin-top:8px; display:inline-flex;" href="https://maps.app.goo.gl/at3WrASQAtFHZ8Vv7" target="_blank" rel="noopener noreferrer">Itineraire</a></div>
+<ul class="act-list">
+  <li><a href="https://maps.google.com/?q=Pucisca+Brac" target="_blank" rel="noopener noreferrer" class="geo-link"><strong>Pučišća</strong></a><br>Découverte de l'architecture en pierre blanche.</li>
+  <li><a href="https://maps.google.com/?q=Skrip+Brac" target="_blank" rel="noopener noreferrer" class="geo-link"><strong>Škrip</strong></a><br>Visite du <a href="https://maps.google.com/?q=Muzej+ulja+Skrip" target="_blank" rel="noopener noreferrer" class="geo-link">musée de l'huile d'olive</a>.</li>
+  <li><a href="https://maps.google.com/?q=Vidova+Gora+Brac" target="_blank" rel="noopener noreferrer" class="geo-link"><strong>Vidova Gora</strong></a><br>Ascension. Départ de Bol vers le sommet (778 m). Vue panoramique époustouflante sur la plage de Zlatni Rat.</li>
+  <li><a href="https://maps.google.com/?q=Vidova+Gora+Brac" target="_blank" rel="noopener noreferrer" class="geo-link"><strong>Pražnica</strong></a><br>Retour vers bol.</li>
+  <li><a href="https://maps.app.goo.gl/JqLkXLXj6X1fJzh27" target="_blank" rel="noopener noreferrer" class="geo-link"><strong>Murvica</strong></a><br>Après-midi : retour par la côte à travers des paysages de pins, halte baignade dans cette crique plus sauvage et calme.</li>
+  <li><strong>19h00 : Restitution du scooter à Bol.</strong></li>
+</ul>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">🌙 Soirée · Zlatni Rat</div>
+    <ul class="act-list">
+      <li>Baignade en fin de journée à la plage de <a href="https://maps.google.com/?q=Zlatni+Rat+Beach+Bol" target="_blank" rel="noopener noreferrer" class="geo-link">Zlatni Rat</a>.</li>
+      <li>Dîner dans une <em>konoba</em> du vieux village de Bol.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="11-07" class="page" >
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅 Samedi 11 juillet</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Split"  target="_blank" rel="noopener"></a> Bol ➔ Split — Patrimoine historique ➔ Trogir</div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">⛵ Étape 1 : Catamaran Bol ➔ Split</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.jadrolinija.hr/en/search-buy-ticket" target="_blank" rel="noopener noreferrer">Jadrolinija</a></td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">12h10</span> Présence 15mn avant</td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">13h10</span> sur la Riva de Split</td></tr>
+          <tr><td class="label">Tarif</td><td><span class="price-tag">23 € / pers</span> (Durée rapide de 1h)</td></tr>          
+          <tr><td class="label">Réservation</td><td>
+		  <a href="https://drive.google.com/file/d/1aMVSQC8MmIHiFpUiiNUkdV7R5OyuqT2A/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Ticket</a>
+		  <a href="https://drive.google.com/file/d/1FQRZLwLyF3SHU-9y7c9V5JjD7i45VBxe/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan FR</a>
+		  <a href="https://drive.google.com/file/d/107-PiaILXpq5HRFuvtaHIA6yEjhHURXr/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Scan LY</a>
+		  </td></tr>		  
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="act-group-label">⏱13h10 - 15h45 · Découverte Split (2,5h)</div>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:8px;"><em>Astuce bagages : Déposez vos valises à la consigne du port de Split juste à côté des terminaux d'arrivée.</em></p>
+    <ul class="act-list">
+      <li><a href="https://maps.app.goo.gl/RcbkPERLcBFXczfw8" target="_blank" rel="noopener noreferrer" class="geo-link">Sainte Trinité</a> (Sutroica)<br>Eglise catholique pré-romane VIIIe s.</li>
+      <li><a href="https://maps.app.goo.gl/2GvgVYnneL3b7BeY7" target="_blank" rel="noopener noreferrer" class="geo-link">Saint-Domnius</a> Cathédrale de Split<br>L’ancien mausolée de Dioclétien  étonnant mélange de styles</li>
+      <li><a href="https://maps.app.goo.gl/qMyZw2Ek6NFMt3VU8" target="_blank" rel="noopener noreferrer" class="geo-link">Palais de Dioclétien</a> (UNESCO) à la fraîche<br>Découvrez les vestiges de ce palais-forteresse romain unique au monde : Salles Souterraines, Péristyle, Cathédrale Saint-Domnius et Temple de Jupiter.</li>
+      <li><a  href="https://maps.app.goo.gl/SsEHb2Ce2ZLzW2EJ7" target="_blank" rel="noopener noreferrer" class="geo-link">Place du Peuple</a> & Labyrinthe médiéval <br>Perdez-vous dans les magnifiques ruelles de marbre poli intra-muros. Sortez par la Porte d'Or pour voir la</li>
+	  <li><a  href="https://maps.app.goo.gl/ry7pbe2fKGbh1eLN8" target="_blank" rel="noopener noreferrer" class="geo-link">Grgur Ninski</a> <br>Statue monumentale en bronze, lui frotter le gros orteil pour porter bonheur.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box" style="background:#E8F4FA; border-color: var(--sea-mid);">
+      <div class="ferry-title" style="color:var(--sea-mid);">⛵ Étape 2 : Navette Maritime Split ➔ Trogir</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.buraline.com" target="_blank" rel="noopener noreferrer">buraline.com</a>(Liaison maritime directe)</td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">16h00</span>  — Embarcadère <a href="https://maps.app.goo.gl/L35171vQMEMyNja76" target="_blank" rel="noopener noreferrer" class="geo-link">Riva</a></td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">17h00</span> — Sur la Riva de Trogir</td></tr>
+          <tr><td class="label">Tarif</td><td><span class="price-tag">~9 € / pers</span> (Durée ~1h00)</td></tr>
+          <tr><td class="label">Booking</td><td><span>Booking a faire à bord.</span>
+			<div><span>Horaires :<strong>09:30 13:00 16:00 20:00</strong>.</span><br></div>	
+			</td>  
+		  </tr>
+          <tr><td class="label">Ou: Bus 37</td><td><a href="https://www.promet-split.hr/en/bus-line-37" target="_blank" rel="noopener noreferrer">Promet-split</a> Toutes les 30mn durée 1h environ depuis la <a href="https://maps.app.goo.gl/kFJHfkjhUepYxujU6" target="_blank" rel="noopener noreferrer" class="geo-link">Gare</a> routière <br><a href="https://fleet.promet-split.hr/" target="_blank" rel="noopener noreferrer"> Temps Réel</a></td></tr>
+		  
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🏨 Hébergement Trogir</h3>
+    <div class="hotel-box">
+	<div ><a class="hotel-link" href="https://maps.app.goo.gl/wEFLp6hwWRkrWxzH6" target="_blank" rel="noopener noreferrer">Carlina Amaris Suite</a><a class="hotel-stars">⭐ 5 / 5 Google Maps</a></div> 
+      <div class="hotel-addr">📍 Obala bana Berislavića 21</div>
+      <div class="hotel-price">162€ / nuit · pas de petit-déjeuner inclus</div>
+      <div class="hotel-desc">Hôtel de charme historique au cœur de l'îlot médiéval (UNESCO), proche de la cathédrale. Solution idéale pour être proche de l'aéroport et débarquer directement sur les quais.</div>
+    </div>
+  </div>
+</section>
+
+<section id="12-07" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📅Dimanche 12 juill.</span></h2>
+  <div class="page-desc"><a class="icon-link" href="https://fr.wikipedia.org/wiki/Trogir"  target="_blank" rel="noopener"></a>  Trogir ➔ Vol Retour Nantes</div>
+
+  <div class="card">
+    <div class="act-group-label">Matin & Après-midi · Trogir Vénitienne</div>
+    <ul class="act-list">
+      <li><a href="https://maps.google.com/?q=Trogir+Old+Town" target="_blank" rel="noopener noreferrer" class="geo-link">Vieille ville de Trogir</a><br>Classée à l'UNESCO. Îlot fortifié relié par des ponts. Plan urbain hellénistique intact combinant styles roman, gothique et baroque.</li>
+      <li><a href="https://maps.google.com/?q=St.+Lawrence+Cathedral+Trogir" target="_blank" rel="noopener noreferrer" class="geo-link">Cathédrale Saint-Laurent</a><br>(XIIIe s.) : Remarquable pour son portail roman sculpté par le Maître Radovan (1240). Vue depuis la tour.</li>
+      <li><a href="https://maps.app.goo.gl/JtRKHZ4ryhinjjzKA" target="_blank" rel="noopener noreferrer" class="geo-link">Palais ducal</a><br>Cipiko Palace : Magnifique ensemble vénitien du XVe.</li>
+      <li><a href="https://maps.google.com/?q=Kamerlengo+Castle+Trogir" target="_blank" rel="noopener noreferrer" class="geo-link">Forteresse Kamerlengo </a><br>(XVe s.) : Citadelle en bord de mer. Vue panoramique sur la Riva de Trogir.</li>
+	  <li>Dîner en terrasse face au port de plaisance de Trogir.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">🚌 Bus Trogir → Airport</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.promet-split.hr/en/airport-line" target="_blank" rel="noopener noreferrer">Promet</a>&nbsp &nbsp<a href="https://maps.app.goo.gl/PydfoxnY5vpxAiPe8" target="_blank" rel="noopener noreferrer"> Ligne 37</a></td></tr>
+          <tr><td class="label">Départ</td><td><span class="badge-time">18h00</span></td></tr>
+          <tr><td class="label">Arrivée</td><td><span class="badge-time">18h10</span></td></tr>
+          <tr><td class="label">Arrêts</td><td>Kolodvor → Zrackna Luka2 &nbsp&nbsp<a href="https://fleet.promet-split.hr/" target="_blank" rel="noopener noreferrer">Temps Réel</a></td></tr>
+          <tr><td class="label">Tarif</td><td>2.50 € / pers. (10mn)</td></tr>
+        </table>
+      </div>
+ 
+      </div>
+    </div>
+
+   <div class="card">
+    <div class="ferry-box">
+      <div class="ferry-title">✈️ Split → Nantes</div>
+      <div class="ferry-body">
+        <table class="details-table">
+          <tr><td class="label">Compagnie</td><td><a href="https://www.volotea.com/fr/" target="_blank" rel="noopener noreferrer">Volotea</a></td></tr>
+          <tr><td class="label">Enregistrement</td><td><span class="badge-time">18:10h à 19:30h</span></td></tr>
+          <tr><td class="label">Embarquement</td><td><span class="badge-time">19:30h à 19:50h</span></td></tr>
+          <tr><td class="label">Sièges</td><td> 12F et 12E</td></tr>
+          <tr><td class="label">Décollage</td><td>20h10h</td></tr>
+          <tr><td class="label">Atterrissage</td><td>22:50h</td></tr>
+          <tr>
+		  <td class="label">Lien</td>
+		  <td>
+		  <a href="https://drive.google.com/file/d/16_RTQw6cUj-NjbppZkeK_e4zRUMjNfPl/view?usp=drive_link" target="_blank" rel="noopener noreferrer">Board Pass</a>
+		  <a href="https://drive.google.com/file/d/15jK6255jimnN0dxQH-ln-kFiFDBrCAbk/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Scan FR</a>
+		  <a href="https://drive.google.com/file/d/1ODfPLJy44E_BCDvmWFNSJLPr3OUe4Y6R/view?usp=drive_link" target="_blank" rel="noopener noreferrer"> Scan LY</a>
+		  </td>
+		  </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="Vocabulaire" class="page" style="padding:8px;">
+  <h2 style="flex-direction:column; align-items:stretch; gap:2px;">
+    <div style="display:flex; align-items:center; gap:5px;">
+      <button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button>
+      🗣️ <a id="gtranslate-link"   target="_blank" class="h2-date" style="flex:1; text-align:center;">Traduction</a>
+      
+    </div>
+
+    <script>
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isAndroid = /Android/i.test(ua);
+        var isIOS = /iPhone|iPad|iPod/i.test(ua);
+        var url = (isAndroid || isIOS)
+          ? 'https://translate.google.com/m?sl=fr&tl=hr&q=bonjour'   // mobile : version légère
+          : 'https://translate.google.com/?sl=fr&tl=hr&text=bonjour&op=translate'; // desktop
+        document.getElementById('gtranslate-link').href = url;
+      })();
+    </script>
+  </h2>
+
+  <style>
+    .vcat {
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1px;
+      margin: 12px 0 4px 2px;
+      padding-bottom: 3px;
+      border-bottom: 1px dashed var(--sand);
+    }
+    .vtable {
+      width: 100%;
+      border-collapse: collapse;
+      /* font-size: 14px; */
+    }
+    .vtable tr { border-bottom: 1px solid #F0EEE8; }
+    .vtable tr:last-child { border-bottom: none; }
+    .vtable td {padding: 3px 3px;vertical-align: middle;}
+    .vfr {color: var(--muted);width: 50%;/* font-size: 15px; */font-weight: 600;}
+    .vhr {
+      font-weight: 600;
+      color: var(--sea);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .vhr:active { opacity: 0.6; }
+    .vhr.speaking {
+      color: var(--terracotta);
+      animation: vPulse 0.4s ease-in-out infinite alternate;
+    }
+    @keyframes vPulse { from { opacity: 1; } to { opacity: 0.5; } }
+  </style>
+
+  <!-- 👋 POLITESSE -->
+  <div class="vcat">👋 Politesse</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Bonjour (matin)</td><td class="vhr" onclick="speak(this,'Dobro jutro')">Dobro jutro</td></tr>
+      <tr><td class="vfr">Bonjour (journée)</td><td class="vhr" onclick="speak(this,'Dobar dan')">Dobar dan</td></tr>
+      <tr><td class="vfr">Bonsoir</td><td class="vhr" onclick="speak(this,'Dobra večer')">Dobra večer</td></tr>
+      <tr><td class="vfr">Bonne nuit</td><td class="vhr" onclick="speak(this,'Laku noć')">Laku noć</td></tr>
+      <tr><td class="vfr">Au revoir</td><td class="vhr" onclick="speak(this,'Doviđenja')">Doviđenja</td></tr>
+      <tr><td class="vfr">Bonne journée</td><td class="vhr" onclick="speak(this,'Ugodan dan')">Ugodan dan</td></tr>
+      <tr><td class="vfr">Bonne soirée</td><td class="vhr" onclick="speak(this,'Ugodnu večer')">Ugodnu večer</td></tr>
+      <tr><td class="vfr">Salut</td><td class="vhr" onclick="speak(this,'Bok')">Bok</td></tr>
+      <tr><td class="vfr">S'il vous plaît</td><td class="vhr" onclick="speak(this,'Molim')">Molim</td></tr>
+      <tr><td class="vfr">Je suis francais</td><td class="vhr" onclick="speak(this,'Ja sam Francuz')">Ja sam Francuz</td></tr>
+	  <tr><td class="vfr">Je ne comprends pas</td>		<td class="vhr" onclick="speak(this,'Ne razumijem')">Ne razumijem</td></tr>
+      <tr><td class="vfr">Merci beaucoup</td><td class="vhr" onclick="speak(this,'Hvala lijepa')">Hvala lijepa</td></tr>
+      <tr><td class="vfr">De rien</td><td class="vhr" onclick="speak(this,'Nema na čemu')">Nema na čemu</td></tr>
+      <tr><td class="vfr">Excusez-moi</td><td class="vhr" onclick="speak(this,'Oprostite')">Oprostite</td></tr>
+      <tr><td class="vfr">Pardon</td><td class="vhr" onclick="speak(this,'Žao mi je')">Žao mi je</td></tr>
+      <tr><td class="vfr">Oui / Non</td><td class="vhr" onclick="speak(this,'Da. Ne.')">Da / Ne</td></tr>
+    </table>
+  </div>
+
+  <!-- 🍽️ RESTAURANT -->
+  <div class="vcat">🍽️ Restaurant</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Une table pour 2 svp</td>	<td class="vhr" onclick="speak(this,'Stol za dvoje molim')">		Stol za dvoje molim</td></tr>
+      <tr><td class="vfr">J'ai une réservation au nom de Darmon</td><td class="vhr" onclick="speak(this,'Imam rezervaciju na ime Darmon')">Imam rezervaciju na ime Darmon</td></tr>
+      <tr><td class="vfr">La carte svp.</td>		<td class="vhr" onclick="speak(this,'Jelovnik, molim')">			Jelovnik, molim</td></tr>
+      <tr><td class="vfr">Je veux ce plat</td>		<td class="vhr" onclick="speak(this,'Želim ovo jelo')">				Želim ovo jelo</td></tr>
+      <tr><td class="vfr">Je veux manger du..</td>	<td class="vhr" onclick="speak(this,'Želim jesti')">				Želim jesti</td></tr>	  
+	  <tr><td class="vfr">..Poulpe grillé</td>		<td class="vhr" onclick="speak(this,'pečenu hobotnicu')">			pečenu hobotnicu</td></tr>
+	  <tr><td class="vfr">..Boeuf grillé</td>		<td class="vhr" onclick="speak(this,'pečenu govedinu')">			pečenu govedinu</td></tr>
+	  <tr><td class="vfr">..Poisson grillé</td>		<td class="vhr" onclick="speak(this,'ribu s roštilja')">			ribu s roštilja</td></tr>
+      <tr><td class="vfr">..Fruits de mer</td>		<td class="vhr" onclick="speak(this,'morske plodove')">				morske plodove</td></tr>
+      <tr><td class="vfr">..Grillades</td>			<td class="vhr" onclick="speak(this,'hranu s roštilja')">			hranu s roštilja</td></tr>
+      <tr><td class="vfr">Je veux boire..</td>		<td class="vhr" onclick="speak(this,'Želim piti')">					Želim piti</td></tr>	  
+      <tr><td class="vfr">..de l'eau plate</td>		<td class="vhr" onclick="speak(this,'mirnu vodu')">					mirnu vodu</td></tr>
+      <tr><td class="vfr">..bière pression		</td><td class="vhr" onclick="speak(this,'točeno pivo.')">				točeno pivo.</td></tr>
+      <tr><td class="vfr">..Vin rouge</td>			<td class="vhr" onclick="speak(this,'Crno vino.')">					Crno vino</td></tr>
+      <tr><td class="vfr">..Vin blanc</td>			<td class="vhr" onclick="speak(this,'Bijelo vino.')">				bijelo vino</td></tr>
+      <tr><td class="vfr">..Café</td>				<td class="vhr" onclick="speak(this,'Kava')">						Kava</td></tr>      
+      <tr><td class="vfr">C'etait délicieux ..</td>	<td class="vhr" onclick="speak(this,'Bilo je ukusno, hvala ti!')">	Bilo je ukusno, hvala ti!</td></tr>
+      <tr><td class="vfr">L'addition svp.</td>		<td class="vhr" onclick="speak(this,'Račun, molim')">				Račun, molim</td></tr>
+      <tr><td class="vfr">Bon appétit</td>			<td class="vhr" onclick="speak(this,'Dobar tek!')">					Dobar tek!</td></tr>
+      <tr><td class="vfr">Santé !</td>				<td class="vhr" onclick="speak(this,'Živjeli!')">					Živjeli!</td></tr>
+    </table>
+  </div>
+
+  <!-- 🔢 NOMBRES -->
+  <div class="vcat">🔢 Nombres</div>  
+  <div class="card">
+    <table  style="width: 100%;">
+	<tr>	    
+		<td class="vhr" onclick="speak(this,'Jedan')"	> 1    </td>
+		<td class="vhr" onclick="speak(this,'Dva')"	> 2    </td>
+		<td class="vhr" onclick="speak(this,'Tri')"	> 3    </td>
+		<td class="vhr" onclick="speak(this,'Četiri')"> 4    </td>
+		<td class="vhr" onclick="speak(this,'Pet')"	> 5    </td>
+		<td class="vhr" onclick="speak(this,'Šest')"	> 6    </td>
+		<td class="vhr" onclick="speak(this,'Sedam')"	> 7    </td>
+		<td class="vhr" onclick="speak(this,'Osam')"	> 8    </td>
+		<td class="vhr" onclick="speak(this,'Devet')"	> 9    </td>
+		<td class="vhr" onclick="speak(this,'Deset')"	> 10</td>
+	</tr>
+	</table>
+    <table class="vtable">	
+      <tr><td class="vfr">10 . 11 . 12 . 13</td><td class="vhr" onclick="speak(this,'deset. Jedanaest. Dvanaest. Trinaest.')">deset . Jeda naest · Dva naest · Tri naest</td></tr>
+      <tr><td class="vfr">20 . 21 . 22 . 23</td><td class="vhr" onclick="speak(this,'dvadeset. dvadeset jedan. dvadeset dva. dvadeset tri.')">dvadeset · °jedan · °dva . °tri</td></tr>
+      <tr><td class="vfr">30 . 31 . 32 . 33</td><td class="vhr" onclick="speak(this,'trideset. trideset jedan. trideset dva. trideset tri.')">trideset · °jedan · °dva . °tri </td></tr>
+      <tr><td class="vfr">40 . 50 . 60 </td><td class="vhr" onclick="speak(this,'četrdeset. pedeset. šezdeset.')">četrdeset · pedeset · šezdeset</td></tr>
+      <tr><td class="vfr">70 . 80 . 90 </td><td class="vhr" onclick="speak(this,'sedamdeset. osamdeset. devedeset.')">sedamdeset · osamdeset · devedeset </td></tr>
+      <tr><td class="vfr">100 · 1000</td><td class="vhr" onclick="speak(this,'Sto. Tisuću.')">Sto · Tisuću</td></tr>
+    </table>
+  </div>
+
+  <!-- 🏨 HÉBERGEMENT -->
+  <div class="vcat">🏨 Hébergement</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Check-in / Check-out</td><td class="vhr" onclick="speak(this,'Prijava. Odjava.')">Prijava / Odjava</td></tr>
+      <tr><td class="vfr">La clé</td><td class="vhr" onclick="speak(this,'Ključ')">Ključ</td></tr>
+      <tr><td class="vfr">Climatisation</td><td class="vhr" onclick="speak(this,'Klima uređaj')">Klima uređaj</td></tr>
+    </table>
+  </div>
+
+  <!-- ❓ QUESTIONS -->
+  <div class="vcat">❓ Questions utiles</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Parlez-vous français ?</td>	<td class="vhr" onclick="speak(this,'Govorite li francuski?')">	Govorite li francuski?</td></tr>
+      <tr><td class="vfr">Parlez-vous anglais ?</td>	<td class="vhr" onclick="speak(this,'Govorite li engleski?')">	Govorite li engleski?</td></tr>
+      <tr><td class="vfr">Parlez-vous espagnol ?</td>	<td class="vhr" onclick="speak(this,'Govorite li španjolski?')">Govorite li španjolski?</td></tr>
+      <tr><td class="vfr">Je ne comprends pas</td>		<td class="vhr" onclick="speak(this,'Ne razumijem')">			Ne razumijem</td></tr>
+      <tr><td class="vfr">Répétez svp</td>				<td class="vhr" onclick="speak(this,'Možete li ponoviti?')">	Možete li ponoviti?</td></tr>
+      <tr><td class="vfr">Combien ça coûte ?</td>		<td class="vhr" onclick="speak(this,'Koliko košta?')">			Koliko košta?</td></tr>
+      <tr><td class="vfr">Où est… ?</td>				<td class="vhr" onclick="speak(this,'Gdje je?')">				Gdje je… ?</td></tr>
+      <tr><td class="vfr">À quelle heure ?</td>			<td class="vhr" onclick="speak(this,'U koliko sati?')">			U koliko sati?</td></tr>
+      <tr><td class="vfr">C'est loin ?</td>				<td class="vhr" onclick="speak(this,'Je li daleko?')">			Je li daleko?</td></tr>
+      <tr><td class="vfr">Je ne sais pas</td>			<td class="vhr" onclick="speak(this,'Ne znam')">				Ne znam</td></tr>
+    </table>
+  </div>
+
+  <!-- ⛵ TRANSPORT -->
+  <div class="vcat">⛵ Transport</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Ferry</td><td class="vhr" onclick="speak(this,'Trajekt')">Trajekt</td></tr>
+      <tr><td class="vfr">Port</td><td class="vhr" onclick="speak(this,'Luka')">Luka</td></tr>
+      <tr><td class="vfr">Billet</td><td class="vhr" onclick="speak(this,'Karta')">Karta</td></tr>
+      <tr><td class="vfr">Un billet pour…</td><td class="vhr" onclick="speak(this,'Jedna karta za')">Jedna karta za…</td></tr>
+      <tr><td class="vfr">Plage</td><td class="vhr" onclick="speak(this,'Plaža')">Plaža</td></tr>
+      <tr><td class="vfr">Vieille ville</td><td class="vhr" onclick="speak(this,'Stari grad')">Stari grad</td></tr>
+      <tr><td class="vfr">Gauche / Droite</td><td class="vhr" onclick="speak(this,'Lijevo. Desno.')">Lijevo / Desno</td></tr>
+      <tr><td class="vfr">Tout droit</td><td class="vhr" onclick="speak(this,'Ravno')">Ravno</td></tr>
+      <tr><td class="vfr">Taxi</td><td class="vhr" onclick="speak(this,'Taksi')">Taksi</td></tr>
+    </table>
+  </div>
+
+  <!-- 🚨 URGENCES -->
+  <div class="vcat">🚨 Urgences</div>
+  <div class="card">
+    <table class="vtable">
+      <tr><td class="vfr">Au secours !</td><td class="vhr" onclick="speak(this,'Upomoć!')">Upomoć!</td></tr>
+      <tr><td class="vfr">Appelez la police !</td><td class="vhr" onclick="speak(this,'Zovite policiju!')">Zovite policiju!</td></tr>
+      <tr><td class="vfr">Appelez un médecin !</td><td class="vhr" onclick="speak(this,'Zovite doktora!')">Zovite doktora!</td></tr>
+      <tr><td class="vfr">Hôpital</td><td class="vhr" onclick="speak(this,'Bolnica')">Bolnica</td></tr>
+      <tr><td class="vfr">Pharmacie</td><td class="vhr" onclick="speak(this,'Ljekarna')">Ljekarna</td></tr>
+      <tr><td class="vfr">J'ai mal à…</td><td class="vhr" onclick="speak(this,'Boli me')">Boli me…</td></tr>
+    </table>
+  </div>
+
+  <script>
+    let hrVoice = null;
+
+    function loadVoices() {
+      const v = window.speechSynthesis.getVoices();
+      hrVoice = v.find(x => x.lang.startsWith('hr')) || v.find(x => x.lang.startsWith('cs')) || null;
+    }
+    if (window.speechSynthesis) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
+
+    function speak(el, text) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = 'hr-HR'; utt.rate = 0.7;
+      if (hrVoice) utt.voice = hrVoice;
+      el.classList.add('speaking');
+      utt.onend = utt.onerror = () => el.classList.remove('speaking');
+      window.speechSynthesis.speak(utt);
+    }
+  </script>
+</section>
+
+
+
+<section id="Documents" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">📄 Documents</span></h2>
+
+  <div class="page-inner">
+    <div class="card">
+      <div class="ferry-box">
+        <div class="ferry-title">🪪 Documents officiels</div>
+
+        <table class="details-table">
+          <tr height = "50">
+            <td class="label" >Permis</td>
+            <td>
+              <a class="hotel-link"
+                 href="https://drive.google.com/file/d/11LNoFtlqXGjNmaImovPoeP6RtJkZw4p_/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                Permis FR
+              </a>
+			  &nbsp&nbsp<a class="hotel-link"
+                 href="https://drive.google.com/file/d/1y7Lc_5BvgeunlkJx0RLSqCmGFb-BS-HH/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                Permis LY
+              </a>
+            </td>
+			
+          </tr>
+
+          <tr height = "50">
+            <td class="label">Cni</td>
+            <td>
+              <a class="hotel-link"
+                 href="https://drive.google.com/file/d/1UiZ5fNVMhmYtzt3HNGSfHsVpyqMe3XqC/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                CNI FR
+              </a>
+			  &nbsp&nbsp<a class="hotel-link"
+                 href="https://drive.google.com/file/d/1pnLCiQm5JgtDhN-W_o5Kvf2XEpI6vvjI/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                CNI LY
+              </a>
+            </td>
+          </tr>
+          <tr height = "50">
+            <td class="label">Maladie</td>
+            <td>
+              <a class="hotel-link"
+                 href="https://drive.google.com/file/d/1SV9OWTsOqpW9NLkd4Gvr_XbmDOVJi5wK/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                Carte FR
+              </a>
+              &nbsp&nbsp<a class="hotel-link"
+                 href="https://drive.google.com/file/d/1FU8XCEujoZUF_eE6aNHUVno-7U7BS1hp/view?usp=drive_link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                Carte LY
+              </a>
+            </td>
+          </tr>
+
+        </table>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="Dépenses" class="page">
+
+  <h2><button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours"><span></span><span></span><span></span></button><span class="h2-date">💰 Dépenses</span></h2>
+
+  <!-- Vols -->
+  <h3 style="color:var(--terracotta);">✈️ Vols</h3>
+  <div class="card" >
+    <table class="ferry-table" style="border-color: var(--terracotta);">
+      <thead style="background: var(--terracotta); cursor:pointer;" onclick="toggleExpense(this)">
+        <tr>
+          <th>Date</th>
+          <th>Trajet</th>
+          <th>Vol</th>
+          <th style="text-align: right;">Montant  <button class="expense-toggle-btn" tabindex="-1">▶  </button></th>
+        </tr>
+      </thead>
+      <tbody class="expense-tbody">
+        <tr><td>02 Juil</td><td>Nantes ➔ Dubrovnik</td><td>V7 2216</td><td style="text-align: right;"><span class="price-tag">98.87 €</span></td></tr>
+        <tr><td>12 Juil</td><td>Split ➔ Nantes</td><td>V7 2245</td><td style="text-align: right;"><span class="price-tag">213.80 €</span></td></tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:#FFF0ED;">
+          <td colspan="3">Total Vols</td>
+          <td style="text-align: right;">312.67 €</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Traversées -->
+  <h3 style="color:var(--sea-mid);">⛵ Traversées Maritimes</h3>
+  <div class="card" >
+    <table class="ferry-table">
+      <thead style="cursor:pointer;" onclick="toggleExpense(this)">
+        <tr>
+          <th>Date</th>
+          <th>De ➔ À</th>
+          <th style="text-align: right;">Montant  <button class="expense-toggle-btn" tabindex="-1">▶  </button></th>
+        </tr>
+      </thead>
+      <tbody class="expense-tbody">
+        <tr><td>05 Juil</td><td>Dubrovnik ➔ Korčula</td><td style="text-align: right;"><span class="price-tag">60,00 €</span></td></tr>
+        <tr><td>07 Juil</td><td>Korčula ➔ Hvar Town</td><td style="text-align: right;"><span class="price-tag">50,00 €</span></td></tr>
+        <tr><td>09 Juil</td><td>Hvar Town ➔ Bol</td><td style="text-align: right;"><span class="price-tag">50,00 €</span></td></tr>
+        <tr><td>11 Juil</td><td>Bol ➔ Split</td><td style="text-align: right;"><span class="price-tag">46,00 €</span></td></tr>
+        <tr><td>11 Juil</td><td>Split ➔ Trogir</td><td style="text-align: right;"><span class="price-tag">18,00 €</span></td></tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:var(--ferry-bg);">
+          <td colspan="2">Total Traversées</td>
+          <td style="text-align: right;">224,00 €</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Hébergement -->
+  <h3 style="color:var(--hotel-bd);">🏨 Dépenses Hébergement</h3>
+  <div class="card" >
+    <table class="ferry-table" style="border-color: var(--hotel-bd);">
+      <thead style="background: var(--hotel-bd); cursor:pointer;" onclick="toggleExpense(this)">
+        <tr>
+          <th>Date</th>
+          <th>Établissement</th>
+          <th style="text-align: right;">Montant  <button class="expense-toggle-btn" tabindex="-1">▶</button></th>
+        </tr>
+      </thead>
+      <tbody class="expense-tbody">
+        <tr><td>2–4 juil.</td><td>Divina Blue Apartment</td><td style="text-align: right;"><span class="price-tag">302,00 €</span></td></tr>
+        <tr><td>4–5 juil.</td><td>B&B Sol</td><td style="text-align: right;"><span class="price-tag">158,60 €</span></td></tr>
+        <tr><td>5–7 juil.</td><td>Lemon & Stone</td><td style="text-align: right;"><span class="price-tag">248,00 €</span></td></tr>
+        <tr><td>7–9 juil.</td><td>Villa Mili</td><td style="text-align: right;"><span class="price-tag">290,70 €</span></td></tr>
+        <tr><td>9–11 juil.</td><td>Apartment Merlin</td><td style="text-align: right;"><span class="price-tag">267,80 €</span></td></tr>
+        <tr><td>11–12 juil.</td><td>Carlina Amaris Suite</td><td style="text-align: right;"><span class="price-tag">162,00 €</span></td></tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:var(--hotel-bg);">
+          <td colspan="2">Total Hébergement</td>
+          <td style="text-align: right;">1 429,10 €</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Divers -->
+  <h3 style="color:var(--muted);">📋 Dépenses Diverses</h3>
+  <div class="card" >
+    <table class="ferry-table" style="border-color: var(--muted);">
+      <thead style="background: var(--muted); cursor:pointer;" onclick="toggleExpense(this)">
+        <tr>
+          <th>Date</th>
+          <th>Libellé</th>
+          <th style="text-align: right;">Montant  <button class="expense-toggle-btn" tabindex="-1">▶</button></th>
+        </tr>
+      </thead>
+      <tbody class="expense-tbody">
+        <tr><td>02 juillet</td><td>Parking Nantes</td><td style="text-align: right;"><span class="price-tag">111,00 €</span></td></tr>
+        <tr><td>02 juillet</td><td>Navette aéroport > centre</td><td style="text-align: right;"><span class="price-tag">20,00 €</span></td></tr>
+        <tr><td>03 juillet</td><td>Pass Dubrovnik</td><td style="text-align: right;"><span class="price-tag">100,00 €</span></td></tr>
+        <tr><td>06 juillet</td><td>Scooter Korčula</td><td style="text-align: right;"><span class="price-tag">100,00 €</span></td></tr>
+        <tr><td>08 juillet</td><td>Scooter Hvar</td><td style="text-align: right;"><span class="price-tag">119,00 €</span></td></tr>
+        <tr><td>10 juillet</td><td>Scooter Bol</td><td style="text-align: right;"><span class="price-tag">83,00 €</span></td></tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:#f4f4f4;">
+          <td colspan="2">Total Divers</td>
+          <td style="text-align: right;">533,00€</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Total Général -->
+  <div class="card" style="background: var(--sea); color: white; text-align: center; font-size: 15px; font-weight: 700; border-radius: 10px;">
+    TOTAL SÉJOUR : 2 498,77 €
+  </div>
+</section>
+
+<!-- Navigation popup menu -->
+<div id="nav-overlay" onclick="closeNavMenu()"></div>
+<div id="nav-popup">
+  <div id="nav-popup-header">
+    🗺️ Croatie 2026
+    <button id="nav-popup-close" onclick="closeNavMenu()">✕</button>
+  </div>
+  <ul>
+    <li><button onclick="navTo('accueil')"><span class="nav-day-badge">Sommaire</span><span class="nav-day-title">Sommaire</span></button></li>
+    <li><button onclick="navTo('02-07')"><span class="nav-day-badge">02 Juil</span><span class="nav-day-title">Nantes → Dubrovnik</span></button></li>
+    <li><button onclick="navTo('03-07')"><span class="nav-day-badge">03 Juil</span><span class="nav-day-title">Dubrovnik · Remparts</span></button></li>
+    <li><button onclick="navTo('04-07')"><span class="nav-day-badge">04 Juil</span><span class="nav-day-title">Dubrovnik · Fort & Srđ</span></button></li>
+    <li><button onclick="navTo('05-07')"><span class="nav-day-badge">05 Juil</span><span class="nav-day-title">Dbv → Korčula · Découverte</span></button></li>
+    <li><button onclick="navTo('06-07')"><span class="nav-day-badge">06 Juil</span><span class="nav-day-title">Korčula · Scooter</span></button></li>
+    <li><button onclick="navTo('07-07')"><span class="nav-day-badge">07 Juil</span><span class="nav-day-title">Korčula → Hvar</span></button></li>
+    <li><button onclick="navTo('08-07')"><span class="nav-day-badge">08 Juil</span><span class="nav-day-title">Hvar · Scooter</span></button></li>
+    <li><button onclick="navTo('09-07')"><span class="nav-day-badge">09 Juil</span><span class="nav-day-title">Hvar → Bol (Brač)</span></button></li>
+    <li><button onclick="navTo('10-07')"><span class="nav-day-badge">10 Juil</span><span class="nav-day-title">Bol · Scooter</span></button></li>
+    <li><button onclick="navTo('11-07')"><span class="nav-day-badge">11 Juil</span><span class="nav-day-title">Split → Trogir</span></button></li>
+    <li><button onclick="navTo('12-07')"><span class="nav-day-badge">12 Juil</span><span class="nav-day-title">Trogir → Nantes</span></button></li>
+    <li class="nav-sep">Récapitulatifs</li>
+    <li><button onclick="navTo('Vocabulaire')"><span class="nav-day-badge" style="background:var(--ferry-bg);color:var(--ferry-bd);">🗣️ Vocab</span><span class="nav-day-title">Vocabulaire Croate</span></button></li>
+    <li><button onclick="navTo('Documents')"><span class="nav-day-badge" style="background:var(--ferry-bg);color:var(--ferry-bd);">Papiers</span><span class="nav-day-title">Identité</span></button></li>
+    <li><button onclick="navTo('Dépenses')"><span class="nav-day-badge" style="background:var(--ferry-bg);color:var(--ferry-bd);">⛵ Dépenses</span><span class="nav-day-title">Tableau des dépenses</span></button></li>
+  </ul>
+</div>
+
+<script>
+  // ── Mise en place du conteneur interne scrollable par section ──────
+  // Pour que le h2 et la description de la journée (.page-desc)
+  // restent fixes en haut et qu'on ne voie jamais la section suivante
+  // apparaître par-dessous, chaque .page devient une fenêtre opaque de
+  // la hauteur exacte de l'écran (overflow: hidden).
+  // On déplace donc tout son contenu (sauf le h2 et .page-desc s'ils
+  // existent) dans un wrapper .page-inner qui, lui, scrolle de façon
+  // indépendante.
+  document.querySelectorAll('.page').forEach(page => {
+    const inner = document.createElement('div');
+    inner.className = 'page-inner';
+
+    const h2 = page.querySelector(':scope > h2');
+    const desc = page.querySelector(':scope > .page-desc');
+    const children = Array.from(page.childNodes);
+
+    children.forEach(node => {
+      if (node === h2 || node === desc) return;
+      inner.appendChild(node);
+    });
+
+    page.appendChild(inner);
+  });
+</script>
+
+<script>
+	function toggleExpense(thead) {
+	  const tbody = thead.nextElementSibling;
+	  const btn   = thead.querySelector('.expense-toggle-btn');
+
+	  const open = tbody.classList.toggle('open');
+
+	  if (btn) btn.classList.toggle('open', open);
+	}
+</script>
+
+<script>
+  const pages = ["accueil", "02-07", "03-07", "04-07", "05-07", "06-07", "07-07", "08-07", "09-07", "10-07", "11-07", "12-07", "Vocabulaire", "Documents", "Dépenses"];
+  let currentPageIndex = 0;
+
+  function updateNavButtons() {
+    document.querySelectorAll('.btn-prev').forEach(btn => { btn.disabled = (currentPageIndex === 0); });
+    document.querySelectorAll('.btn-next').forEach(btn => { btn.disabled = (currentPageIndex === pages.length - 1); });
+  }
+
+  function showPage(pageId) {
+    const target = document.getElementById(pageId);
+    if (!target) return;
+    const inner = target.querySelector(':scope > .page-inner');
+    if (inner) inner.scrollTop = 0;
+    target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+    _lastPageId = pageId;
+  }
+
+  function navPrev() { if (currentPageIndex > 0) showPage(pages[currentPageIndex - 1]); }
+  function navNext() { if (currentPageIndex < pages.length - 1) showPage(pages[currentPageIndex + 1]); }
+
+  // ── Tracking page courante via scroll ────────────────────────────
+  document.body.addEventListener('scroll', function() {
+    const scrollTop = document.body.scrollTop;
+    const windowH = window.innerHeight;
+    const idx = Math.round(scrollTop / windowH);
+    if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
+      currentPageIndex = idx;
+      console.log('scroll → page:', pages[idx], '| scrollTop:', scrollTop, '| windowH:', windowH);
+      updateNavButtons();
+	  _pushNav(pages[idx]);
+    }
+  });
+
+  updateNavButtons();
+
+  // ── Retour Android ────────────────────────────────────────────────
+  let _navStack       = [];
+  let _lastPageId     = 'accueil';
+  let _backInProgress = false;
+
+  history.replaceState({ nav: 'root' }, '');
+  history.pushState({ nav: true }, '');
+  console.log('INIT history.length=', history.length);
+
+  function _pushNav(pageId) {
+    if (_backInProgress) return;
+    const top = _navStack[_navStack.length - 1];
+    if (top && top.pageId === pageId) return;
+    if (top) {
+      const prevEl = document.getElementById(top.pageId);
+      const prevInner = prevEl && prevEl.querySelector(':scope > .page-inner');
+      top.scrollTop = prevInner ? prevInner.scrollTop : 0;
+    }
+    _navStack.push({ pageId, scrollTop: 0 });
+    history.pushState({ nav: true }, '');
+    console.log('_pushNav:', pageId, '| stack:', _navStack.map(x=>x.pageId), '| history.length=', history.length);
+  }
+
+  const _origShowPage = showPage;
+  window.showPage = function(pageId) { _pushNav(pageId); _origShowPage(pageId); };
+
+  const _origUpdateNavButtons = updateNavButtons;
+  window.updateNavButtons = function() {
+    _origUpdateNavButtons();
+  };
+
+  _pushNav('accueil');
+
+  window.addEventListener('popstate', function() {
+    console.log('POPSTATE | stack avant pop:', _navStack.map(x=>x.pageId), '| history.length=', history.length);
+    _navStack.pop();
+    const prev = _navStack[_navStack.length - 1];
+    console.log('POPSTATE | prev:', prev ? prev.pageId : 'VIDE');
+
+    if (!prev) {
+      _navStack.push({ pageId: 'accueil', scrollTop: 0 });
+      history.pushState({ nav: true }, '');
+      console.log('POPSTATE | pile vide → retour accueil');
+      _backInProgress = true;
+      const el = document.getElementById('accueil');
+      if (el) {
+        const inner = el.querySelector(':scope > .page-inner');
+        if (inner) inner.scrollTop = 0;
+        el.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+        currentPageIndex = 0;
+        _origUpdateNavButtons();
+      }
+      _backInProgress = false;
+      return;
+    }
+
+    _backInProgress = true;
+    const target = document.getElementById(prev.pageId);
+    if (target) {
+      const inner = target.querySelector(':scope > .page-inner');
+      if (inner) inner.scrollTop = prev.scrollTop || 0;
+      target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+      currentPageIndex = pages.indexOf(prev.pageId);
+      _origUpdateNavButtons();
+    }
+    _backInProgress = false;
+  });
+
+  function openNavMenu() {
+    document.getElementById('nav-overlay').classList.add('open');
+    document.getElementById('nav-popup').classList.add('open');
+  }
+  function closeNavMenu() {
+    document.getElementById('nav-overlay').classList.remove('open');
+    document.getElementById('nav-popup').classList.remove('open');
+  }
+  function navTo(pageId) { closeNavMenu(); showPage(pageId); }
+</script>
+</body>
+</html>
