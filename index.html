@@ -1525,6 +1525,7 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   }
 
   function showPage(pageId) {
+    console.log('showPage:', pageId);
     _hashChanging = true;
     window.location.hash = pageId;
     _scrollToPage(pageId);
@@ -1537,39 +1538,38 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   function navPrev() { if (currentPageIndex > 0) showPage(pages[currentPageIndex - 1]); }
   function navNext() { if (currentPageIndex < pages.length - 1) showPage(pages[currentPageIndex + 1]); }
 
-  // ── Tracking page courante via scroll (swipe) ─────────────────────
   document.body.addEventListener('scroll', function() {
     const idx = Math.round(document.body.scrollTop / window.innerHeight);
     if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
       currentPageIndex = idx;
       updateNavButtons();
-      // replaceState sur le hash : met à jour l'URL sans créer d'entrée historique
-      // le swipe ne crée pas d'état — seul showPage (liens/menu) en crée
+      console.log('scroll → page:', pages[idx], '| scrollTop:', document.body.scrollTop);
       history.replaceState(null, '', '#' + pages[idx]);
+      console.log('replaceState hash:', pages[idx]);
     }
   });
 
-  // ── Retour Android via hashchange ─────────────────────────────────
-  // Chaque appel à showPage crée une entrée hash dans l'historique.
-  // Le bouton Retour Android navigue entre ces hashs nativement.
   window.addEventListener('hashchange', function() {
+    console.log('hashchange | hash:', window.location.hash, '| _hashChanging:', _hashChanging);
     if (_hashChanging) return;
     const pageId = window.location.hash.slice(1);
     if (!pageId || !pages.includes(pageId)) {
+      console.log('hashchange → accueil (hash vide ou inconnu)');
       _scrollToPage('accueil');
       currentPageIndex = 0;
       updateNavButtons();
       return;
     }
     const idx = pages.indexOf(pageId);
+    console.log('hashchange → navigate to:', pageId);
     currentPageIndex = idx;
     updateNavButtons();
     _scrollToPage(pageId);
   });
 
-  // ── Init : si un hash est déjà dans l'URL au chargement ───────────
   (function() {
     const hash = window.location.hash.slice(1);
+    console.log('INIT | hash:', hash, '| history.length:', history.length);
     if (hash && pages.includes(hash)) {
       const idx = pages.indexOf(hash);
       currentPageIndex = idx;
@@ -1578,7 +1578,6 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
     updateNavButtons();
   })();
 
-  // ── Menu hamburger ────────────────────────────────────────────────
   function openNavMenu() {
     document.getElementById('nav-overlay').classList.add('open');
     document.getElementById('nav-popup').classList.add('open');
