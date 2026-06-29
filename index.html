@@ -342,7 +342,7 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   <div class="hero-mobile">
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
       <button class="btn-hamburger" onclick="openNavMenu()" aria-label="Menu jours" style="background:rgba(255,255,255,0.25); flex-shrink:0;"><span></span><span></span><span></span></button>
-      <h1 style="flex:1; text-align:center;">Croatie Dalmatienne <em>île-en-île</em></h1>
+      <h1 style="flex:1; text-align:center;">1Croatie Dalmatienne <em>île-en-île</em></h1>
     </div>
     <p style="font-size:12px; opacity:0.85; text-align:center;">Nantes ➔ Dubrovnik / Split ➔ Nantes</p>
   </div>
@@ -1539,20 +1539,19 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   updateNavButtons();
 
   // ── Retour Android ────────────────────────────────────────────────
-  // Chrome Android n'intercepte popstate que si au moins 2 touchend
-  // ont précédé le pushState qui sera consommé par le Retour.
-  // On pose un 1er pushState #accueil au chargement, un 2ème au 1er
-  // touchend (fin du 1er swipe bloqué par scroll-snap). Ainsi quand
-  // le 2ème swipe scrolle et pose #02-07, le Retour a 2 états et
-  // déclenche popstate correctement.
+  // Chrome Android n'intercepte popstate que si la page a une sticky
+  // user activation — c'est-à-dire qu'un touchend complet a précédé
+  // le pushState. On fait donc le pushState uniquement dans touchend,
+  // jamais pendant scroll/touchmove où le geste est encore en cours.
 
   history.pushState(null, '', '#accueil');
 
-  let _firstTouchEndDone = false;
   document.body.addEventListener('touchend', function() {
-    if (!_firstTouchEndDone) {
-      _firstTouchEndDone = true;
-      history.pushState(null, '', '#accueil');
+    const idx = Math.round(document.body.scrollTop / window.innerHeight);
+    if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
+      currentPageIndex = idx;
+      updateNavButtons();
+      history.pushState(null, '', '#' + pages[idx]);
     }
   });
 
@@ -1561,7 +1560,6 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
     if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
       currentPageIndex = idx;
       updateNavButtons();
-      history.pushState(null, '', '#' + pages[idx]);
     }
   });
 
