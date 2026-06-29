@@ -1538,16 +1538,16 @@ Petite remarque : comme width/height sont fixes sur l'élément et que c'est tra
   function navPrev() { if (currentPageIndex > 0) showPage(pages[currentPageIndex - 1]); }
   function navNext() { if (currentPageIndex < pages.length - 1) showPage(pages[currentPageIndex + 1]); }
 
-  document.body.addEventListener('scroll', function() {
+	document.body.addEventListener('scroll', function() {
     const idx = Math.round(document.body.scrollTop / window.innerHeight);
     if (idx !== currentPageIndex && idx >= 0 && idx < pages.length) {
       currentPageIndex = idx;
       updateNavButtons();
       console.log('scroll → page:', pages[idx], '| scrollTop:', document.body.scrollTop);
-	history.pushState(null, '', '#' + pages[idx]);
-      console.log('replaceState hash:', pages[idx]);
+      history.pushState(null, '', '#' + pages[idx]); // ← pushState au lieu de replaceState
+      console.log('pushState hash:', pages[idx], '| history.length:', history.length);
     }
-  });
+});
 
   window.addEventListener('hashchange', function() {
     console.log('hashchange | hash:', window.location.hash, '| _hashChanging:', _hashChanging);
